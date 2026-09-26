@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { AdaptiveQuestion, ProfileFact, UserProfile } from '../types/scheme';
-import { HelpCircle, ChevronRight, Check } from 'lucide-react';
+import React, { useState } from "react";
+import { AdaptiveQuestion, ProfileFact, UserProfile } from "../types/scheme";
+import { HelpCircle, ChevronRight, Check } from "lucide-react";
 
 interface AdaptiveInterviewProps {
   questions: AdaptiveQuestion[];
@@ -31,7 +31,7 @@ export const AdaptiveInterview: React.FC<AdaptiveInterviewProps> = ({
     if (!val) return;
 
     let finalVal: any = val;
-    if (q.inputType === 'number') {
+    if (q.inputType === "number") {
       const num = Number(val);
       if (!isNaN(num)) finalVal = num;
     }
@@ -46,12 +46,11 @@ export const AdaptiveInterview: React.FC<AdaptiveInterviewProps> = ({
         <h3 className="text-sm font-semibold text-stone-900 tracking-tight">
           Help Us Narrow Down Eligible Schemes
         </h3>
-        <span className="text-[11px] text-stone-500 font-normal">
-          · Adaptive Clarification
-        </span>
+        <span className="text-[11px] text-stone-500 font-normal">· Adaptive Clarification</span>
       </div>
       <p className="text-xs text-stone-600 mb-4 font-normal">
-        Based on available candidate schemes in the database, answering these {questions.length} question{questions.length > 1 ? 's' : ''} will eliminate uncertainty.
+        Based on available candidate schemes in the database, answering these {questions.length}{" "}
+        question{questions.length > 1 ? "s" : ""} will eliminate uncertainty.
       </p>
 
       <div className="space-y-4">
@@ -64,13 +63,9 @@ export const AdaptiveInterview: React.FC<AdaptiveInterviewProps> = ({
               className="bg-white rounded-xl border border-stone-200/80 p-4 transition-all"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                <span className="text-xs font-semibold text-stone-900">
-                  {q.questionText}
-                </span>
+                <span className="text-xs font-semibold text-stone-900">{q.questionText}</span>
                 {q.helpText && (
-                  <span className="text-[11px] text-stone-500 font-normal">
-                    {q.helpText}
-                  </span>
+                  <span className="text-[11px] text-stone-500 font-normal">{q.helpText}</span>
                 )}
               </div>
 
@@ -95,9 +90,9 @@ export const AdaptiveInterview: React.FC<AdaptiveInterviewProps> = ({
                   className="flex items-center gap-2 mt-2 max-w-sm"
                 >
                   <input
-                    type={q.inputType === 'number' ? 'number' : 'text'}
-                    placeholder={`Enter ${q.field.replace(/_/g, ' ')}...`}
-                    value={customInputs[q.field] || ''}
+                    type={q.inputType === "number" ? "number" : "text"}
+                    placeholder={`Enter ${q.field.replace(/_/g, " ")}...`}
+                    value={customInputs[q.field] || ""}
                     onChange={(e) =>
                       setCustomInputs((prev) => ({ ...prev, [q.field]: e.target.value }))
                     }

@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { SchemeRecord } from '../types/scheme';
-import { SchemeDataAdapter } from '../services/schemeDataAdapter';
+import React, { useState, useRef } from "react";
+import { SchemeRecord } from "../types/scheme";
+import { SchemeDataAdapter } from "../services/schemeDataAdapter";
 import {
   X,
   Upload,
@@ -12,7 +12,7 @@ import {
   Search,
   Code2,
   HardDrive,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface DatabaseManagerModalProps {
   schemes: SchemeRecord[];
@@ -25,8 +25,8 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
   onDatabaseUpdated,
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'inspect' | 'upload' | 'schema'>('inspect');
-  const [searchFilter, setSearchFilter] = useState('');
+  const [activeTab, setActiveTab] = useState<"inspect" | "upload" | "schema">("inspect");
+  const [searchFilter, setSearchFilter] = useState("");
   const [selectedScheme, setSelectedScheme] = useState<SchemeRecord | null>(schemes[0] || null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,18 +34,20 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
   // Statistics
   const totalSchemes = schemes.length;
   const categoriesCount = Array.from(new Set(schemes.flatMap((s) => s.categories))).length;
-  const centralCount = schemes.filter((s) => s.provider_type === 'central').length;
-  const stateCount = schemes.filter((s) => s.provider_type === 'state').length;
+  const centralCount = schemes.filter((s) => s.provider_type === "central").length;
+  const stateCount = schemes.filter((s) => s.provider_type === "state").length;
 
   const filteredSchemes = schemes.filter((s) =>
-    (s.name + ' ' + s.provider + ' ' + s.categories.join(' ')).toLowerCase().includes(searchFilter.toLowerCase())
+    (s.name + " " + s.provider + " " + s.categories.join(" "))
+      .toLowerCase()
+      .includes(searchFilter.toLowerCase()),
   );
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setUploadStatus('Reading and parsing file(s)...');
+    setUploadStatus("Reading and parsing file(s)...");
 
     let allParsed: SchemeRecord[] = [];
     let filesProcessed = 0;
@@ -58,17 +60,21 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
           const parsed = SchemeDataAdapter.parseDatabaseFile(content, file.name);
           allParsed = [...allParsed, ...parsed];
         } catch (err: any) {
-          console.error('Error parsing file:', file.name, err);
+          console.error("Error parsing file:", file.name, err);
         } finally {
           filesProcessed++;
           if (filesProcessed === files.length) {
             if (allParsed.length > 0) {
               SchemeDataAdapter.saveCustomSchemes(allParsed);
               onDatabaseUpdated(allParsed);
-              setUploadStatus(`Successfully imported ${allParsed.length} schemes from ${files.length} file(s)!`);
+              setUploadStatus(
+                `Successfully imported ${allParsed.length} schemes from ${files.length} file(s)!`,
+              );
               setSelectedScheme(allParsed[0] ?? null);
             } else {
-              setUploadStatus('Could not extract valid scheme records. Please verify the JSON, CSV, or SQL structure.');
+              setUploadStatus(
+                "Could not extract valid scheme records. Please verify the JSON, CSV, or SQL structure.",
+              );
             }
           }
         }
@@ -82,7 +88,7 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
     const defaults = SchemeDataAdapter.getSchemes();
     onDatabaseUpdated(defaults);
     setSelectedScheme(defaults[0] || null);
-    setUploadStatus('Reset to default authentic Central & State scheme database.');
+    setUploadStatus("Reset to default authentic Central & State scheme database.");
   };
 
   return (
@@ -99,7 +105,8 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
                 Scheme Database Intelligence &amp; Data Adapter
               </h2>
               <p className="text-xs text-stone-500 mt-0.5">
-                Inspect active scheme records, map real schema columns, or upload JSON/CSV/SQL database files.
+                Inspect active scheme records, map real schema columns, or upload JSON/CSV/SQL
+                database files.
               </p>
             </div>
           </div>
@@ -116,31 +123,31 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
         <div className="px-5 py-3 border-b border-stone-100 flex flex-wrap items-center justify-between gap-3 bg-white">
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setActiveTab('inspect')}
+              onClick={() => setActiveTab("inspect")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                activeTab === 'inspect'
-                  ? 'bg-stone-900 text-stone-50 shadow-2xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                activeTab === "inspect"
+                  ? "bg-stone-900 text-stone-50 shadow-2xs"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
               }`}
             >
               Browse Records ({totalSchemes})
             </button>
             <button
-              onClick={() => setActiveTab('upload')}
+              onClick={() => setActiveTab("upload")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                activeTab === 'upload'
-                  ? 'bg-stone-900 text-stone-50 shadow-2xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                activeTab === "upload"
+                  ? "bg-stone-900 text-stone-50 shadow-2xs"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
               }`}
             >
               Upload / Replace Database
             </button>
             <button
-              onClick={() => setActiveTab('schema')}
+              onClick={() => setActiveTab("schema")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                activeTab === 'schema'
-                  ? 'bg-stone-900 text-stone-50 shadow-2xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                activeTab === "schema"
+                  ? "bg-stone-900 text-stone-50 shadow-2xs"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
               }`}
             >
               Normalized Model Schema
@@ -165,7 +172,7 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
         </div>
 
         {/* Tab 1: Inspect Records */}
-        {activeTab === 'inspect' && (
+        {activeTab === "inspect" && (
           <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
             {/* Sidebar record list */}
             <div className="w-full md:w-80 border-r border-stone-200 flex flex-col bg-stone-50/50">
@@ -189,14 +196,14 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
                     onClick={() => setSelectedScheme(s)}
                     className={`p-3 text-xs cursor-pointer transition-colors ${
                       selectedScheme?.id === s.id
-                        ? 'bg-stone-900 text-stone-50 font-medium'
-                        : 'hover:bg-stone-100 text-stone-700'
+                        ? "bg-stone-900 text-stone-50 font-medium"
+                        : "hover:bg-stone-100 text-stone-700"
                     }`}
                   >
                     <div className="font-semibold truncate">{s.name}</div>
                     <div
                       className={`text-[11px] mt-0.5 truncate ${
-                        selectedScheme?.id === s.id ? 'text-stone-300' : 'text-stone-400'
+                        selectedScheme?.id === s.id ? "text-stone-300" : "text-stone-400"
                       }`}
                     >
                       {s.provider}
@@ -218,9 +225,7 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
                       <h3 className="text-lg font-bold text-stone-900 tracking-tight mt-1">
                         {selectedScheme.name}
                       </h3>
-                      <p className="text-xs text-stone-500 mt-0.5">
-                        {selectedScheme.provider}
-                      </p>
+                      <p className="text-xs text-stone-500 mt-0.5">{selectedScheme.provider}</p>
                     </div>
 
                     {selectedScheme.source_url && (
@@ -245,21 +250,23 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
                         <span className="text-stone-400 text-[10px] block">Age:</span>
                         <span className="text-stone-700">
                           {selectedScheme.age_rules?.min_age || selectedScheme.age_rules?.max_age
-                            ? `${selectedScheme.age_rules?.min_age || 0} to ${selectedScheme.age_rules?.max_age || 'Unlimited'} years`
-                            : 'No age constraints'}
+                            ? `${selectedScheme.age_rules?.min_age || 0} to ${selectedScheme.age_rules?.max_age || "Unlimited"} years`
+                            : "No age constraints"}
                         </span>
                       </div>
                       <div>
-                        <span className="text-stone-400 text-[10px] block">Annual Income Ceiling:</span>
+                        <span className="text-stone-400 text-[10px] block">
+                          Annual Income Ceiling:
+                        </span>
                         <span className="text-stone-700">
                           {selectedScheme.income_rules?.max_annual_income
-                            ? `₹${selectedScheme.income_rules.max_annual_income.toLocaleString('en-IN')}`
-                            : 'None or Not specified'}
+                            ? `₹${selectedScheme.income_rules.max_annual_income.toLocaleString("en-IN")}`
+                            : "None or Not specified"}
                         </span>
                       </div>
                       <div>
                         <span className="text-stone-400 text-[10px] block">States / Coverage:</span>
-                        <span className="text-stone-700">{selectedScheme.states.join(', ')}</span>
+                        <span className="text-stone-700">{selectedScheme.states.join(", ")}</span>
                       </div>
                     </div>
 
@@ -268,15 +275,19 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
                         Benefits &amp; Documents
                       </span>
                       <div>
-                        <span className="text-stone-400 text-[10px] block">Documented Benefit:</span>
+                        <span className="text-stone-400 text-[10px] block">
+                          Documented Benefit:
+                        </span>
                         <span className="text-stone-700 font-medium">
                           {selectedScheme.benefits[0]?.amount_or_details}
                         </span>
                       </div>
                       <div>
-                        <span className="text-stone-400 text-[10px] block">Required Documents ({selectedScheme.documents.length}):</span>
+                        <span className="text-stone-400 text-[10px] block">
+                          Required Documents ({selectedScheme.documents.length}):
+                        </span>
                         <span className="text-stone-700">
-                          {selectedScheme.documents.map((d) => d.name).join(', ')}
+                          {selectedScheme.documents.map((d) => d.name).join(", ")}
                         </span>
                       </div>
                     </div>
@@ -305,14 +316,16 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
         )}
 
         {/* Tab 2: Upload / Replace Database */}
-        {activeTab === 'upload' && (
+        {activeTab === "upload" && (
           <div className="flex-1 p-8 overflow-y-auto max-w-3xl mx-auto space-y-6">
             <div className="text-center space-y-2">
               <h3 className="text-lg font-bold text-stone-900 tracking-tight">
                 Upload Scheme Database Files
               </h3>
               <p className="text-xs text-stone-500 max-w-xl mx-auto">
-                Upload your 3 database files (JSON, CSV, or SQL/Supabase export). The SchemeSaar data adapter automatically detects column mappings, extracts criteria, and preserves every raw record for evidence tracing.
+                Upload your 3 database files (JSON, CSV, or SQL/Supabase export). The SchemeSaar
+                data adapter automatically detects column mappings, extracts criteria, and preserves
+                every raw record for evidence tracing.
               </p>
             </div>
 
@@ -348,23 +361,35 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
             <div className="bg-stone-50 rounded-xl p-4 border border-stone-200/80 text-xs space-y-2 text-stone-600">
               <div className="font-semibold text-stone-800">Supported Ingestion Formats:</div>
               <ul className="list-disc list-inside space-y-1 text-[11px]">
-                <li><span className="font-mono text-stone-800">JSON</span>: Array of objects, or wrapped under keys like <code>schemes</code>, <code>data</code>, <code>records</code>.</li>
-                <li><span className="font-mono text-stone-800">CSV / TSV</span>: Dynamic header matching for scheme name, ministry, age, income limits, benefits, documents, and links.</li>
-                <li><span className="font-mono text-stone-800">SQL</span>: SQL dumps containing <code>INSERT INTO</code> statements.</li>
+                <li>
+                  <span className="font-mono text-stone-800">JSON</span>: Array of objects, or
+                  wrapped under keys like <code>schemes</code>, <code>data</code>,{" "}
+                  <code>records</code>.
+                </li>
+                <li>
+                  <span className="font-mono text-stone-800">CSV / TSV</span>: Dynamic header
+                  matching for scheme name, ministry, age, income limits, benefits, documents, and
+                  links.
+                </li>
+                <li>
+                  <span className="font-mono text-stone-800">SQL</span>: SQL dumps containing{" "}
+                  <code>INSERT INTO</code> statements.
+                </li>
               </ul>
             </div>
           </div>
         )}
 
         {/* Tab 3: Normalized Schema Documentation */}
-        {activeTab === 'schema' && (
+        {activeTab === "schema" && (
           <div className="flex-1 p-8 overflow-y-auto max-w-4xl mx-auto space-y-6 text-xs text-stone-700">
             <div>
               <h3 className="text-base font-bold text-stone-900 tracking-tight mb-1">
                 SchemeSaar Normalized Scheme Model Specification
               </h3>
               <p className="text-stone-500">
-                Internal canonical representation supporting heterogeneous government database schemas without data loss.
+                Internal canonical representation supporting heterogeneous government database
+                schemas without data loss.
               </p>
             </div>
 
@@ -393,13 +418,13 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
                   </tr>
                   <tr>
                     <td className="p-3 font-mono font-medium text-stone-900">age_rules</td>
-                    <td className="p-3 text-stone-500">{'{ min_age, max_age }'}</td>
+                    <td className="p-3 text-stone-500">{"{ min_age, max_age }"}</td>
                     <td className="p-3">Age bracket reasoning</td>
                     <td className="p-3 text-emerald-700">null (UNKNOWN)</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-mono font-medium text-stone-900">income_rules</td>
-                    <td className="p-3 text-stone-500">{'{ max_annual_income }'}</td>
+                    <td className="p-3 text-stone-500">{"{ max_annual_income }"}</td>
                     <td className="p-3">Household income limit check</td>
                     <td className="p-3 text-emerald-700">null (UNKNOWN)</td>
                   </tr>
@@ -424,7 +449,9 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
                   <tr>
                     <td className="p-3 font-mono font-medium text-stone-900">raw_record</td>
                     <td className="p-3 text-stone-500">Record&lt;string, any&gt;</td>
-                    <td className="p-3 font-semibold text-stone-900">Original raw record for zero-hallucination audit</td>
+                    <td className="p-3 font-semibold text-stone-900">
+                      Original raw record for zero-hallucination audit
+                    </td>
                     <td className="p-3 text-stone-600">Exact source file record</td>
                   </tr>
                 </tbody>
@@ -436,7 +463,8 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-stone-200 bg-stone-50 flex items-center justify-between">
           <div className="text-xs text-stone-500">
-            Active Dataset: <span className="font-semibold text-stone-800">{totalSchemes} Schemes</span>
+            Active Dataset:{" "}
+            <span className="font-semibold text-stone-800">{totalSchemes} Schemes</span>
           </div>
           <button
             onClick={onClose}

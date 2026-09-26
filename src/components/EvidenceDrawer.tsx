@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
-import { CandidateScheme, CriterionEvaluation } from '../types/scheme';
-import { X, CheckCircle2, AlertTriangle, HelpCircle, XCircle, Code2, ExternalLink } from 'lucide-react';
+import React, { useState } from "react";
+import { CandidateScheme, CriterionEvaluation } from "../types/scheme";
+import {
+  X,
+  CheckCircle2,
+  AlertTriangle,
+  HelpCircle,
+  XCircle,
+  Code2,
+  ExternalLink,
+} from "lucide-react";
 
 interface EvidenceDrawerProps {
   candidate: CandidateScheme | null;
@@ -12,30 +20,30 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({ candidate, onClo
 
   if (!candidate) return null;
 
-  const renderStatusBadge = (status: CriterionEvaluation['status']) => {
+  const renderStatusBadge = (status: CriterionEvaluation["status"]) => {
     switch (status) {
-      case 'SATISFIED':
+      case "SATISFIED":
         return (
           <span className="inline-flex items-center gap-1 text-emerald-700 font-medium text-xs">
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>SATISFIED</span>
           </span>
         );
-      case 'NOT_SATISFIED':
+      case "NOT_SATISFIED":
         return (
           <span className="inline-flex items-center gap-1 text-rose-700 font-medium text-xs">
             <XCircle className="w-3.5 h-3.5" />
             <span>NOT SATISFIED</span>
           </span>
         );
-      case 'CONFLICTING_DATA':
+      case "CONFLICTING_DATA":
         return (
           <span className="inline-flex items-center gap-1 text-purple-700 font-medium text-xs">
             <AlertTriangle className="w-3.5 h-3.5" />
             <span>CONFLICTING DATA</span>
           </span>
         );
-      case 'UNKNOWN':
+      case "UNKNOWN":
       default:
         return (
           <span className="inline-flex items-center gap-1 text-amber-700 font-medium text-xs">
@@ -83,20 +91,36 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({ candidate, onClo
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs text-center font-medium">
               <div className="bg-white p-2.5 rounded-lg border border-stone-200 shadow-2xs">
-                <span className="text-[10px] text-stone-400 block uppercase font-mono">1. User Fact</span>
-                <span className="text-stone-800 text-[11px] mt-0.5 block truncate">Stated Profile</span>
+                <span className="text-[10px] text-stone-400 block uppercase font-mono">
+                  1. User Fact
+                </span>
+                <span className="text-stone-800 text-[11px] mt-0.5 block truncate">
+                  Stated Profile
+                </span>
               </div>
               <div className="bg-white p-2.5 rounded-lg border border-stone-200 shadow-2xs">
-                <span className="text-[10px] text-stone-400 block uppercase font-mono">2. Match Criterion</span>
-                <span className="text-stone-800 text-[11px] mt-0.5 block truncate">Verified Rules</span>
+                <span className="text-[10px] text-stone-400 block uppercase font-mono">
+                  2. Match Criterion
+                </span>
+                <span className="text-stone-800 text-[11px] mt-0.5 block truncate">
+                  Verified Rules
+                </span>
               </div>
               <div className="bg-white p-2.5 rounded-lg border border-stone-200 shadow-2xs">
-                <span className="text-[10px] text-stone-400 block uppercase font-mono">3. DB Record</span>
-                <span className="text-stone-800 text-[11px] mt-0.5 block truncate">Official Field</span>
+                <span className="text-[10px] text-stone-400 block uppercase font-mono">
+                  3. DB Record
+                </span>
+                <span className="text-stone-800 text-[11px] mt-0.5 block truncate">
+                  Official Field
+                </span>
               </div>
               <div className="bg-white p-2.5 rounded-lg border border-stone-200 shadow-2xs">
-                <span className="text-[10px] text-stone-400 block uppercase font-mono">4. Result</span>
-                <span className="text-stone-800 text-[11px] mt-0.5 block truncate">{candidate.match_state}</span>
+                <span className="text-[10px] text-stone-400 block uppercase font-mono">
+                  4. Result
+                </span>
+                <span className="text-stone-800 text-[11px] mt-0.5 block truncate">
+                  {candidate.match_state}
+                </span>
               </div>
             </div>
           </div>
@@ -163,7 +187,9 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({ candidate, onClo
           <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 text-xs text-amber-900 space-y-2">
             <div className="font-semibold">Official Verification Notice</div>
             <p className="leading-relaxed text-[11px] text-amber-800">
-              {candidate.verification_note} SchemeSaar provides guidance based on available database records. Final eligibility and approval are determined exclusively by the relevant scheme authority ({candidate.scheme.provider}).
+              {candidate.verification_note} SchemeSaar provides guidance based on available database
+              records. Final eligibility and approval are determined exclusively by the relevant
+              scheme authority ({candidate.scheme.provider}).
             </p>
             {candidate.source.url && (
               <a
@@ -185,7 +211,9 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({ candidate, onClo
               className="flex items-center gap-2 text-xs font-medium text-stone-700 hover:text-stone-950 transition-colors cursor-pointer"
             >
               <Code2 className="w-4 h-4 text-stone-500" />
-              <span>{showRawJson ? 'Hide Raw Database Record' : 'Inspect Raw Database Record'}</span>
+              <span>
+                {showRawJson ? "Hide Raw Database Record" : "Inspect Raw Database Record"}
+              </span>
             </button>
 
             {showRawJson && (

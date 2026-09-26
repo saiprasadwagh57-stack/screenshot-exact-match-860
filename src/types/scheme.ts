@@ -3,9 +3,9 @@
  * Canonical Data Types adhering to the System Blueprint Specification
  */
 
-export type ProviderType = 'central' | 'state' | 'joint' | 'private' | 'unknown';
-export type GovernmentLevel = 'Central' | 'State' | 'District' | 'Municipal' | 'Unknown';
-export type SchemeStatus = 'Active' | 'Closed' | 'Upcoming' | 'Unknown';
+export type ProviderType = "central" | "state" | "joint" | "private" | "unknown";
+export type GovernmentLevel = "Central" | "State" | "District" | "Municipal" | "Unknown";
+export type SchemeStatus = "Active" | "Closed" | "Upcoming" | "Unknown";
 
 export interface AgeRules {
   min_age?: number | null | undefined;
@@ -35,18 +35,18 @@ export interface EducationRules {
 }
 
 export interface GenderRules {
-  allowed_genders?: ('male' | 'female' | 'transgender' | 'any')[];
+  allowed_genders?: ("male" | "female" | "transgender" | "any")[];
   description?: string | undefined;
 }
 
 export interface CategoryRules {
-  allowed_social_categories?: ('General' | 'OBC' | 'SC' | 'ST' | 'EWS' | 'Minority' | 'Any')[];
+  allowed_social_categories?: ("General" | "OBC" | "SC" | "ST" | "EWS" | "Minority" | "Any")[];
   minority_only?: boolean;
   description?: string | undefined;
 }
 
 export interface GeographyRules {
-  area_type?: ('Rural' | 'Urban' | 'Semi-Urban' | 'Any')[];
+  area_type?: ("Rural" | "Urban" | "Semi-Urban" | "Any")[];
   states?: string[];
   districts?: string[];
   description?: string | undefined;
@@ -115,12 +115,8 @@ export interface UserProfile {
 }
 
 // Criterion Evaluation States
-export type CriterionStatus = 
-  | 'SATISFIED'
-  | 'NOT_SATISFIED'
-  | 'UNKNOWN'
-  | 'NOT_APPLICABLE'
-  | 'CONFLICTING_DATA';
+export type CriterionStatus =
+  "SATISFIED" | "NOT_SATISFIED" | "UNKNOWN" | "NOT_APPLICABLE" | "CONFLICTING_DATA";
 
 export interface CriterionEvaluation {
   criterion_name: string;
@@ -134,10 +130,7 @@ export interface CriterionEvaluation {
 
 // Guidance Match States
 export type OverallMatchState =
-  | 'LIKELY MATCH'
-  | 'POTENTIAL MATCH'
-  | 'MORE INFORMATION NEEDED'
-  | 'DOES NOT APPEAR TO MATCH';
+  "LIKELY MATCH" | "POTENTIAL MATCH" | "MORE INFORMATION NEEDED" | "DOES NOT APPEAR TO MATCH";
 
 export interface CandidateScheme {
   scheme: SchemeRecord;
@@ -172,7 +165,7 @@ export interface AdaptiveQuestion {
   questionText: string;
   helpText?: string;
   categoryContext?: string;
-  inputType: 'number' | 'select' | 'text' | 'boolean';
+  inputType: "number" | "select" | "text" | "boolean";
   options?: { label: string; value: any }[];
   priority: number;
 }
@@ -181,7 +174,7 @@ export interface SearchFilters {
   category?: string;
   state?: string;
   provider_type?: string;
-  match_state?: OverallMatchState | 'ALL';
+  match_state?: OverallMatchState | "ALL";
   benefit_type?: string;
   search_query?: string;
 }

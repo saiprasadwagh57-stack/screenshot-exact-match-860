@@ -1,16 +1,24 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { useState, useRef, useMemo, useEffect } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: App,
   head: () => ({
     meta: [
-      { title: 'SchemeSaar — Find Government Schemes You Qualify For' },
-      { name: 'description', content: 'Describe your situation in plain words and discover which Indian government schemes you likely qualify for, with evidence and guidance.' },
-      { property: 'og:title', content: 'SchemeSaar — Find Government Schemes You Qualify For' },
-      { property: 'og:description', content: 'Describe your situation in plain words and discover which Indian government schemes you likely qualify for.' },
-      { property: 'og:type', content: 'website' },
-      { name: 'twitter:card', content: 'summary' },
+      { title: "SchemeSaar — Find Government Schemes You Qualify For" },
+      {
+        name: "description",
+        content:
+          "Describe your situation in plain words and discover which Indian government schemes you likely qualify for, with evidence and guidance.",
+      },
+      { property: "og:title", content: "SchemeSaar — Find Government Schemes You Qualify For" },
+      {
+        property: "og:description",
+        content:
+          "Describe your situation in plain words and discover which Indian government schemes you likely qualify for.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
 });
@@ -20,21 +28,21 @@ import {
   CandidateScheme,
   SearchFilters,
   OverallMatchState,
-} from '@/types/scheme';
-import { SchemeDataAdapter } from '@/services/schemeDataAdapter';
-import { SearchService } from '@/services/searchService';
-import { Header } from '@/components/Header';
-import { Hero } from '@/components/Hero';
-import { NaturalLanguageInput } from '@/components/NaturalLanguageInput';
-import { ProfileReview } from '@/components/ProfileReview';
-import { AdaptiveInterview } from '@/components/AdaptiveInterview';
-import { SchemeCard } from '@/components/SchemeCard';
-import { EvidenceDrawer } from '@/components/EvidenceDrawer';
-import { SchemeComparisonModal } from '@/components/SchemeComparisonModal';
-import { DatabaseManagerModal } from '@/components/DatabaseManagerModal';
-import { ScenarioPickerModal } from '@/components/ScenarioPickerModal';
-import { TestScenario } from '@/data/syntheticScenarios';
-import fullDbAsset from '@/assets/schemes.json.asset.json';
+} from "@/types/scheme";
+import { SchemeDataAdapter } from "@/services/schemeDataAdapter";
+import { SearchService } from "@/services/searchService";
+import { Header } from "@/components/Header";
+import { Hero } from "@/components/Hero";
+import { NaturalLanguageInput } from "@/components/NaturalLanguageInput";
+import { ProfileReview } from "@/components/ProfileReview";
+import { AdaptiveInterview } from "@/components/AdaptiveInterview";
+import { SchemeCard } from "@/components/SchemeCard";
+import { EvidenceDrawer } from "@/components/EvidenceDrawer";
+import { SchemeComparisonModal } from "@/components/SchemeComparisonModal";
+import { DatabaseManagerModal } from "@/components/DatabaseManagerModal";
+import { ScenarioPickerModal } from "@/components/ScenarioPickerModal";
+import { TestScenario } from "@/data/syntheticScenarios";
+import fullDbAsset from "@/assets/schemes.json.asset.json";
 import {
   Filter,
   Layers,
@@ -45,7 +53,7 @@ import {
   SlidersHorizontal,
   ArrowUpDown,
   Search,
-} from 'lucide-react';
+} from "lucide-react";
 
 function App() {
   // Database state
@@ -53,33 +61,37 @@ function App() {
 
   // Load the complete scheme database (2,066 schemes) unless a custom import exists
   useEffect(() => {
-    if (localStorage.getItem('schemesaar_custom_database')) return;
+    if (localStorage.getItem("schemesaar_custom_database")) return;
     let cancelled = false;
     fetch(fullDbAsset.url)
       .then((r) => r.json())
       .then((full: SchemeRecord[]) => {
         if (cancelled || !Array.isArray(full)) return;
         const names = new Set(full.map((s) => s.name.toLowerCase()));
-        const extras = SchemeDataAdapter.getSchemes().filter((s) => !names.has(s.name.toLowerCase()));
+        const extras = SchemeDataAdapter.getSchemes().filter(
+          (s) => !names.has(s.name.toLowerCase()),
+        );
         setDatabase([...extras, ...full]);
       })
-      .catch((e) => console.error('Failed to load full scheme database', e));
-    return () => { cancelled = true; };
+      .catch((e) => console.error("Failed to load full scheme database", e));
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Input & Profile state
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const [isExtracting, setIsExtracting] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showProfileReview, setShowProfileReview] = useState(false);
 
   // Filters state
   const [filters, setFilters] = useState<SearchFilters>({
-    category: 'ALL',
-    state: 'ALL',
-    provider_type: 'ALL',
-    match_state: 'ALL',
-    search_query: '',
+    category: "ALL",
+    state: "ALL",
+    provider_type: "ALL",
+    match_state: "ALL",
+    search_query: "",
   });
 
   // Modals and Drawers
@@ -103,7 +115,9 @@ function App() {
   const representedStates = useMemo(() => {
     const set = new Set<string>();
     database.forEach((s) => s.states.forEach((st) => set.add(st)));
-    return Array.from(set).filter((st) => st !== 'All-India').sort();
+    return Array.from(set)
+      .filter((st) => st !== "All-India")
+      .sort();
   }, [database]);
 
   // Profile Extraction handler
@@ -113,9 +127,9 @@ function App() {
 
     try {
       // Call backend API /api/extract-profile
-      const res = await fetch('/api/extract-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/extract-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
 
@@ -129,20 +143,20 @@ function App() {
         setShowProfileReview(true);
       }
     } catch (err) {
-      console.warn('Backend API extraction error, employing client-side fallback:', err);
+      console.warn("Backend API extraction error, employing client-side fallback:", err);
       // Quick fallback profile
       setUserProfile({
         stated_need: text,
         facts: [],
-        inferred_categories: ['General Welfare'],
-        missing_high_value_fields: ['state', 'age', 'annual_household_income'],
+        inferred_categories: ["General Welfare"],
+        missing_high_value_fields: ["state", "age", "annual_household_income"],
       });
       setShowProfileReview(true);
     } finally {
       setIsExtracting(false);
       // Scroll to results smoothly
       setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 150);
     }
   };
@@ -151,10 +165,10 @@ function App() {
   const effectiveProfile: UserProfile = useMemo(() => {
     if (userProfile) return userProfile;
     return {
-      stated_need: '',
+      stated_need: "",
       facts: [],
       inferred_categories: [],
-      missing_high_value_fields: ['state', 'annual_household_income', 'age'],
+      missing_high_value_fields: ["state", "annual_household_income", "age"],
     };
   }, [userProfile]);
 
@@ -199,7 +213,7 @@ function App() {
           field,
           value: null,
           confidence: 0,
-          source: 'User preferred not to answer or does not know',
+          source: "User preferred not to answer or does not know",
         },
       ],
     });
@@ -212,7 +226,7 @@ function App() {
         return prev.filter((id) => id !== candidate.scheme.id);
       }
       if (prev.length >= 4) {
-        alert('You can compare a maximum of 4 schemes simultaneously.');
+        alert("You can compare a maximum of 4 schemes simultaneously.");
         return prev;
       }
       return [...prev, candidate.scheme.id];
@@ -232,17 +246,17 @@ function App() {
   // Reset to initial clean state
   const handleReset = () => {
     setUserProfile(null);
-    setInputText('');
+    setInputText("");
     setFilters({
-      category: 'ALL',
-      state: 'ALL',
-      provider_type: 'ALL',
-      match_state: 'ALL',
-      search_query: '',
+      category: "ALL",
+      state: "ALL",
+      provider_type: "ALL",
+      match_state: "ALL",
+      search_query: "",
     });
     setComparedSchemeIds([]);
     setShowProfileReview(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -259,12 +273,12 @@ function App() {
         {/* Landing Hero Section */}
         <Hero
           categories={representedCategories}
-          selectedCategory={filters.category || 'ALL'}
+          selectedCategory={filters.category || "ALL"}
           onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
           onFocusInput={() => inputRef.current?.focus()}
           onExploreCategories={() => {
-            setFilters((prev) => ({ ...prev, category: 'ALL' }));
-            resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
+            setFilters((prev) => ({ ...prev, category: "ALL" }));
+            resultsRef.current?.scrollIntoView({ behavior: "smooth" });
           }}
         />
 
@@ -305,7 +319,8 @@ function App() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900">
-                We found {candidateSchemes.length} relevant opportunit{candidateSchemes.length === 1 ? 'y' : 'ies'}
+                We found {candidateSchemes.length} relevant opportunit
+                {candidateSchemes.length === 1 ? "y" : "ies"}
               </h2>
               <div className="flex items-center gap-2 text-xs text-stone-500 mt-1">
                 <span>Database Source of Truth</span>
@@ -318,7 +333,7 @@ function App() {
                       onClick={() => setShowProfileReview(!showProfileReview)}
                       className="text-stone-700 font-medium hover:underline cursor-pointer"
                     >
-                      {showProfileReview ? 'Hide Extracted Profile' : 'Review Extracted Profile'}
+                      {showProfileReview ? "Hide Extracted Profile" : "Review Extracted Profile"}
                     </button>
                   </>
                 )}
@@ -361,7 +376,7 @@ function App() {
                 onChange={(e) =>
                   setFilters((prev) => ({
                     ...prev,
-                    match_state: e.target.value as OverallMatchState | 'ALL',
+                    match_state: e.target.value as OverallMatchState | "ALL",
                   }))
                 }
                 className="px-3 py-1.5 text-xs font-medium bg-white border border-stone-200 rounded-xl text-stone-700 hover:border-stone-400 focus:outline-none cursor-pointer"
@@ -374,18 +389,18 @@ function App() {
               </select>
 
               {/* Reset filter button if modified */}
-              {(filters.category !== 'ALL' ||
-                filters.state !== 'ALL' ||
-                filters.match_state !== 'ALL' ||
+              {(filters.category !== "ALL" ||
+                filters.state !== "ALL" ||
+                filters.match_state !== "ALL" ||
                 filters.search_query) && (
                 <button
                   onClick={() =>
                     setFilters({
-                      category: 'ALL',
-                      state: 'ALL',
-                      provider_type: 'ALL',
-                      match_state: 'ALL',
-                      search_query: '',
+                      category: "ALL",
+                      state: "ALL",
+                      provider_type: "ALL",
+                      match_state: "ALL",
+                      search_query: "",
                     })
                   }
                   className="px-2.5 py-1.5 text-xs text-stone-500 hover:text-stone-900 transition-colors cursor-pointer"
@@ -404,16 +419,17 @@ function App() {
                 No matching schemes found in active database
               </h3>
               <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                No scheme matches the combination of your current filters and profile facts. Try clearing filters or reviewing extracted profile facts.
+                No scheme matches the combination of your current filters and profile facts. Try
+                clearing filters or reviewing extracted profile facts.
               </p>
               <button
                 onClick={() =>
                   setFilters({
-                    category: 'ALL',
-                    state: 'ALL',
-                    provider_type: 'ALL',
-                    match_state: 'ALL',
-                    search_query: '',
+                    category: "ALL",
+                    state: "ALL",
+                    provider_type: "ALL",
+                    match_state: "ALL",
+                    search_query: "",
                   })
                 }
                 className="mt-4 px-4 py-2 bg-stone-900 text-stone-50 text-xs font-medium rounded-xl hover:bg-stone-800 transition-colors cursor-pointer"
@@ -431,7 +447,7 @@ function App() {
                   onRefineResult={(c) => {
                     // Open profile review to clarify unknown criteria
                     setShowProfileReview(true);
-                    window.scrollTo({ top: 400, behavior: 'smooth' });
+                    window.scrollTo({ top: 400, behavior: "smooth" });
                   }}
                   isSelectedForCompare={comparedSchemeIds.includes(candidate.scheme.id)}
                   onToggleCompare={handleToggleCompare}
@@ -450,7 +466,8 @@ function App() {
               <Layers className="w-5 h-5 text-amber-400" />
               <div>
                 <span className="text-xs font-semibold block">
-                  {comparedSchemeIds.length} Scheme{comparedSchemeIds.length > 1 ? 's' : ''} Selected
+                  {comparedSchemeIds.length} Scheme{comparedSchemeIds.length > 1 ? "s" : ""}{" "}
+                  Selected
                 </span>
                 <span className="text-[11px] text-stone-400">
                   Compare criteria, benefits, documents &amp; process
@@ -480,11 +497,13 @@ function App() {
       <footer className="mt-16 border-t border-stone-200/80 bg-white py-10 px-4 sm:px-6 lg:px-8 text-xs text-stone-500">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
           <div className="space-y-1 max-w-2xl">
-            <p className="font-semibold text-stone-800">
-              Guidance &amp; Authority Notice:
-            </p>
+            <p className="font-semibold text-stone-800">Guidance &amp; Authority Notice:</p>
             <p className="leading-relaxed text-[11px] text-stone-500">
-              SchemeSaar provides eligibility guidance strictly based on the available scheme database records and the information provided by the user. SchemeSaar is an independent discovery platform and does not represent the scheme authority. Final eligibility, sanction, and disbursement are subject to formal verification and approval by the respective government department or scheme provider.
+              SchemeSaar provides eligibility guidance strictly based on the available scheme
+              database records and the information provided by the user. SchemeSaar is an
+              independent discovery platform and does not represent the scheme authority. Final
+              eligibility, sanction, and disbursement are subject to formal verification and
+              approval by the respective government department or scheme provider.
             </p>
           </div>
 

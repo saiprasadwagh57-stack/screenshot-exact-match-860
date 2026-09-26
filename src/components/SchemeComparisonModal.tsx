@@ -1,6 +1,6 @@
-import React from 'react';
-import { CandidateScheme } from '../types/scheme';
-import { X, CheckCircle2, HelpCircle, XCircle, ExternalLink } from 'lucide-react';
+import React from "react";
+import { CandidateScheme } from "../types/scheme";
+import { X, CheckCircle2, HelpCircle, XCircle, ExternalLink } from "lucide-react";
 
 interface SchemeComparisonModalProps {
   schemes: CandidateScheme[];
@@ -25,7 +25,8 @@ export const SchemeComparisonModal: React.FC<SchemeComparisonModalProps> = ({
               Compare Schemes ({schemes.length} of 4)
             </h2>
             <p className="text-xs text-stone-500 mt-0.5">
-              Side-by-side analysis of eligibility criteria, benefits, required documents, and application process.
+              Side-by-side analysis of eligibility criteria, benefits, required documents, and
+              application process.
             </p>
           </div>
 
@@ -50,7 +51,9 @@ export const SchemeComparisonModal: React.FC<SchemeComparisonModalProps> = ({
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="text-sm font-bold text-stone-900">{s.scheme.name}</div>
-                        <div className="text-[11px] text-stone-500 font-normal">{s.scheme.provider}</div>
+                        <div className="text-[11px] text-stone-500 font-normal">
+                          {s.scheme.provider}
+                        </div>
                       </div>
                       <button
                         onClick={() => onRemoveScheme(s.scheme.id)}
@@ -68,14 +71,10 @@ export const SchemeComparisonModal: React.FC<SchemeComparisonModalProps> = ({
             <tbody className="divide-y divide-stone-100">
               {/* Guidance Match State */}
               <tr>
-                <td className="p-3 font-semibold text-stone-600 bg-stone-50/50">
-                  Match State
-                </td>
+                <td className="p-3 font-semibold text-stone-600 bg-stone-50/50">Match State</td>
                 {schemes.map((s) => (
                   <td key={s.scheme.id} className="p-3">
-                    <span className="font-bold text-stone-900 block text-xs">
-                      {s.match_state}
-                    </span>
+                    <span className="font-bold text-stone-900 block text-xs">{s.match_state}</span>
                     <span className="text-[11px] text-stone-500 block mt-0.5">
                       {s.why_relevant}
                     </span>
@@ -91,7 +90,7 @@ export const SchemeComparisonModal: React.FC<SchemeComparisonModalProps> = ({
                 {schemes.map((s) => (
                   <td key={s.scheme.id} className="p-3">
                     <div className="font-semibold text-stone-900">
-                      {s.benefits[0]?.amount_or_details || 'Refer guidelines'}
+                      {s.benefits[0]?.amount_or_details || "Refer guidelines"}
                     </div>
                     <div className="text-[11px] text-stone-500 mt-0.5">
                       {s.benefits[0]?.description}
@@ -111,16 +110,16 @@ export const SchemeComparisonModal: React.FC<SchemeComparisonModalProps> = ({
                       <span className="text-stone-400 text-[10px] block">Age:</span>
                       <span className="text-stone-700">
                         {s.scheme.age_rules?.min_age || s.scheme.age_rules?.max_age
-                          ? `${s.scheme.age_rules?.min_age || 0} to ${s.scheme.age_rules?.max_age || 'No limit'} yrs`
-                          : 'No age limit specified'}
+                          ? `${s.scheme.age_rules?.min_age || 0} to ${s.scheme.age_rules?.max_age || "No limit"} yrs`
+                          : "No age limit specified"}
                       </span>
                     </div>
                     <div>
                       <span className="text-stone-400 text-[10px] block">Income Ceiling:</span>
                       <span className="text-stone-700">
                         {s.scheme.income_rules?.max_annual_income
-                          ? `₹${s.scheme.income_rules.max_annual_income.toLocaleString('en-IN')}/yr`
-                          : 'No explicit ceiling / Category based'}
+                          ? `₹${s.scheme.income_rules.max_annual_income.toLocaleString("en-IN")}/yr`
+                          : "No explicit ceiling / Category based"}
                       </span>
                     </div>
                   </td>
@@ -134,16 +133,14 @@ export const SchemeComparisonModal: React.FC<SchemeComparisonModalProps> = ({
                 </td>
                 {schemes.map((s) => (
                   <td key={s.scheme.id} className="p-3 text-stone-700">
-                    {s.scheme.states.join(', ')}
+                    {s.scheme.states.join(", ")}
                   </td>
                 ))}
               </tr>
 
               {/* Required Documents */}
               <tr>
-                <td className="p-3 font-semibold text-stone-600 bg-stone-50/50">
-                  Key Documents
-                </td>
+                <td className="p-3 font-semibold text-stone-600 bg-stone-50/50">Key Documents</td>
                 {schemes.map((s) => (
                   <td key={s.scheme.id} className="p-3">
                     <ul className="space-y-1 text-stone-600 text-[11px]">
@@ -160,9 +157,7 @@ export const SchemeComparisonModal: React.FC<SchemeComparisonModalProps> = ({
 
               {/* Application Portal */}
               <tr>
-                <td className="p-3 font-semibold text-stone-600 bg-stone-50/50">
-                  Official Portal
-                </td>
+                <td className="p-3 font-semibold text-stone-600 bg-stone-50/50">Official Portal</td>
                 {schemes.map((s) => (
                   <td key={s.scheme.id} className="p-3">
                     {s.source.url ? (
@@ -179,9 +174,7 @@ export const SchemeComparisonModal: React.FC<SchemeComparisonModalProps> = ({
                       <span className="text-stone-400">Offline / CSC Center</span>
                     )}
                     {s.freshness && (
-                      <div className="text-[10px] text-stone-400 mt-1">
-                        Updated {s.freshness}
-                      </div>
+                      <div className="text-[10px] text-stone-400 mt-1">Updated {s.freshness}</div>
                     )}
                   </td>
                 ))}
@@ -192,9 +185,7 @@ export const SchemeComparisonModal: React.FC<SchemeComparisonModalProps> = ({
 
         {/* Footer */}
         <div className="p-4 border-t border-stone-200 bg-stone-50 flex items-center justify-between">
-          <span className="text-[11px] text-stone-500">
-            Compare up to 4 schemes at once
-          </span>
+          <span className="text-[11px] text-stone-500">Compare up to 4 schemes at once</span>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-stone-900 text-stone-50 text-xs font-medium rounded-xl hover:bg-stone-800 transition-colors cursor-pointer"

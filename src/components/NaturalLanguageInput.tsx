@@ -1,5 +1,5 @@
-import React, { useState, forwardRef } from 'react';
-import { Search, Sparkles, CornerDownLeft, Loader2 } from 'lucide-react';
+import React, { useState, forwardRef } from "react";
+import { Search, Sparkles, CornerDownLeft, Loader2 } from "lucide-react";
 
 interface NaturalLanguageInputProps {
   onSubmit: (text: string) => void;
@@ -8,16 +8,16 @@ interface NaturalLanguageInputProps {
 }
 
 const EXAMPLE_QUERIES = [
-  'I am a student and need help paying college fees.',
-  'I want financial support to build my own house.',
-  'I am a farmer and need help buying agricultural equipment.',
-  'I am looking for a job.',
-  'I want to start a small business.',
-  'I am a worker and want to know what benefits I can receive.',
+  "I am a student and need help paying college fees.",
+  "I want financial support to build my own house.",
+  "I am a farmer and need help buying agricultural equipment.",
+  "I am looking for a job.",
+  "I want to start a small business.",
+  "I am a worker and want to know what benefits I can receive.",
 ];
 
 export const NaturalLanguageInput = forwardRef<HTMLTextAreaElement, NaturalLanguageInputProps>(
-  ({ onSubmit, isLoading, initialValue = '' }, ref) => {
+  ({ onSubmit, isLoading, initialValue = "" }, ref) => {
     const [query, setQuery] = useState(initialValue);
 
     const handleSubmit = (e?: React.FormEvent) => {
@@ -27,7 +27,7 @@ export const NaturalLanguageInput = forwardRef<HTMLTextAreaElement, NaturalLangu
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
+      if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSubmit();
       }
@@ -63,14 +63,18 @@ export const NaturalLanguageInput = forwardRef<HTMLTextAreaElement, NaturalLangu
 
           <div className="flex items-center justify-between pt-3 mt-2 border-t border-stone-100">
             <span className="text-xs text-stone-400 hidden sm:inline">
-              Press <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-stone-100 rounded border border-stone-200 text-stone-600">Enter</kbd> to search
+              Press{" "}
+              <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-stone-100 rounded border border-stone-200 text-stone-600">
+                Enter
+              </kbd>{" "}
+              to search
             </span>
 
             <div className="flex items-center gap-2 ml-auto">
               {query.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => setQuery('')}
+                  onClick={() => setQuery("")}
                   className="px-2.5 py-1.5 text-xs text-stone-500 hover:text-stone-800 transition-colors cursor-pointer"
                 >
                   Clear
@@ -114,7 +118,7 @@ export const NaturalLanguageInput = forwardRef<HTMLTextAreaElement, NaturalLangu
         </div>
       </div>
     );
-  }
+  },
 );
 
-NaturalLanguageInput.displayName = 'NaturalLanguageInput';
+NaturalLanguageInput.displayName = "NaturalLanguageInput";

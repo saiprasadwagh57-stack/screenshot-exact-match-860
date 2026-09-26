@@ -78,10 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "SchemeSaar — Government Scheme Discovery" },
-      { name: "description", content: "Discover which Indian government schemes you qualify for by describing your situation in plain words." },
+      {
+        name: "description",
+        content:
+          "Discover which Indian government schemes you qualify for by describing your situation in plain words.",
+      },
       { name: "author", content: "SchemeSaar" },
       { property: "og:title", content: "SchemeSaar — Government Scheme Discovery" },
-      { property: "og:description", content: "Discover which Indian government schemes you qualify for by describing your situation in plain words." },
+      {
+        property: "og:description",
+        content:
+          "Discover which Indian government schemes you qualify for by describing your situation in plain words.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },

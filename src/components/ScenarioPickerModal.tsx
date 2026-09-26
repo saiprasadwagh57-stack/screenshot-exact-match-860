@@ -1,6 +1,6 @@
-import React from 'react';
-import { TestScenario, SYNTHETIC_TEST_SCENARIOS } from '../data/syntheticScenarios';
-import { X, BookOpen, ArrowRight, CheckCircle2 } from 'lucide-react';
+import React from "react";
+import { TestScenario, SYNTHETIC_TEST_SCENARIOS } from "../data/syntheticScenarios";
+import { X, BookOpen, ArrowRight, CheckCircle2 } from "lucide-react";
 
 interface ScenarioPickerModalProps {
   onSelectScenario: (scenario: TestScenario) => void;
@@ -25,7 +25,8 @@ export const ScenarioPickerModal: React.FC<ScenarioPickerModalProps> = ({
                 10 Real-World Synthetic Test Scenarios (QA Suite)
               </h2>
               <p className="text-xs text-stone-500 mt-0.5">
-                Pre-configured test personas spanning education, agriculture, housing, business, health, and welfare.
+                Pre-configured test personas spanning education, agriculture, housing, business,
+                health, and welfare.
               </p>
             </div>
           </div>

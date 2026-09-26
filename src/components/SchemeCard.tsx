@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { CandidateScheme } from '../types/scheme';
+import React, { useState } from "react";
+import { CandidateScheme } from "../types/scheme";
 import {
   ExternalLink,
   ChevronDown,
@@ -13,7 +13,7 @@ import {
   XCircle,
   Calendar,
   Layers,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface SchemeCardProps {
   candidate: CandidateScheme;
@@ -32,70 +32,79 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
 
-  const { scheme, match_state, why_relevant, criteria, benefits, documents, application, freshness } = candidate;
+  const {
+    scheme,
+    match_state,
+    why_relevant,
+    criteria,
+    benefits,
+    documents,
+    application,
+    freshness,
+  } = candidate;
 
   // Guidance status style mapping
   const getMatchStateUI = () => {
     switch (match_state) {
-      case 'LIKELY MATCH':
+      case "LIKELY MATCH":
         return {
-          textColor: 'text-emerald-800',
-          bgColor: 'bg-emerald-50/90 border-emerald-200/80',
-          dotColor: 'bg-emerald-500',
-          label: 'Likely Match',
-          subtext: 'Available information satisfies documented relevant criteria',
+          textColor: "text-emerald-800",
+          bgColor: "bg-emerald-50/90 border-emerald-200/80",
+          dotColor: "bg-emerald-500",
+          label: "Likely Match",
+          subtext: "Available information satisfies documented relevant criteria",
         };
-      case 'POTENTIAL MATCH':
+      case "POTENTIAL MATCH":
         return {
-          textColor: 'text-amber-800',
-          bgColor: 'bg-amber-50/90 border-amber-200/80',
-          dotColor: 'bg-amber-500',
-          label: 'Potential Match',
-          subtext: 'Several criteria match; some information remains unknown',
+          textColor: "text-amber-800",
+          bgColor: "bg-amber-50/90 border-amber-200/80",
+          dotColor: "bg-amber-500",
+          label: "Potential Match",
+          subtext: "Several criteria match; some information remains unknown",
         };
-      case 'MORE INFORMATION NEEDED':
+      case "MORE INFORMATION NEEDED":
         return {
-          textColor: 'text-stone-800',
-          bgColor: 'bg-stone-100 border-stone-200',
-          dotColor: 'bg-stone-400',
-          label: 'More Information Needed',
-          subtext: 'Scheme appears relevant but a decisive fact is missing',
+          textColor: "text-stone-800",
+          bgColor: "bg-stone-100 border-stone-200",
+          dotColor: "bg-stone-400",
+          label: "More Information Needed",
+          subtext: "Scheme appears relevant but a decisive fact is missing",
         };
-      case 'DOES NOT APPEAR TO MATCH':
+      case "DOES NOT APPEAR TO MATCH":
       default:
         return {
-          textColor: 'text-rose-800',
-          bgColor: 'bg-rose-50/90 border-rose-200/80',
-          dotColor: 'bg-rose-500',
-          label: 'Does Not Appear to Match',
-          subtext: 'Explicit criteria conflict with current user information',
+          textColor: "text-rose-800",
+          bgColor: "bg-rose-50/90 border-rose-200/80",
+          dotColor: "bg-rose-500",
+          label: "Does Not Appear to Match",
+          subtext: "Explicit criteria conflict with current user information",
         };
     }
   };
 
   const matchUI = getMatchStateUI();
-  const satisfiedCriteria = criteria.filter((c) => c.status === 'SATISFIED');
-  const unknownCriteria = criteria.filter((c) => c.status === 'UNKNOWN');
-  const notSatisfiedCriteria = criteria.filter((c) => c.status === 'NOT_SATISFIED');
+  const satisfiedCriteria = criteria.filter((c) => c.status === "SATISFIED");
+  const unknownCriteria = criteria.filter((c) => c.status === "UNKNOWN");
+  const notSatisfiedCriteria = criteria.filter((c) => c.status === "NOT_SATISFIED");
 
   return (
     <div
       className={`rounded-2xl bg-white border transition-all duration-200 overflow-hidden ${
         isSelectedForCompare
-          ? 'border-stone-900 ring-2 ring-stone-900/10 shadow-sm'
-          : 'border-stone-200/90 hover:border-stone-300 shadow-xs hover:shadow-sm'
+          ? "border-stone-900 ring-2 ring-stone-900/10 shadow-sm"
+          : "border-stone-200/90 hover:border-stone-300 shadow-xs hover:shadow-sm"
       }`}
     >
       {/* Top Match Status Banner */}
-      <div className={`px-5 py-3 border-b flex items-center justify-between gap-3 ${matchUI.bgColor}`}>
+      <div
+        className={`px-5 py-3 border-b flex items-center justify-between gap-3 ${matchUI.bgColor}`}
+      >
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${matchUI.dotColor}`} />
           <span className={`text-xs font-semibold uppercase tracking-wider ${matchUI.textColor}`}>
             {matchUI.label}
           </span>
-          <span className="text-[11px] text-stone-500 hidden md:inline">
-            · {matchUI.subtext}
-          </span>
+          <span className="text-[11px] text-stone-500 hidden md:inline">· {matchUI.subtext}</span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -116,11 +125,11 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
       <div className="p-5 sm:p-6 space-y-4">
         {/* Unboxed Metadata Line — Zero-pill discipline */}
         <div className="flex flex-wrap items-center gap-x-2 text-xs text-stone-500 font-normal">
-          <span>{scheme.categories.join(', ')}</span>
+          <span>{scheme.categories.join(", ")}</span>
           <span aria-hidden="true">·</span>
           <span>{scheme.government_level} Level</span>
           <span aria-hidden="true">·</span>
-          <span>{scheme.states.join(', ')}</span>
+          <span>{scheme.states.join(", ")}</span>
           {freshness && (
             <>
               <span aria-hidden="true">·</span>
@@ -134,9 +143,7 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
           <h3 className="text-base sm:text-lg font-bold text-stone-900 tracking-tight leading-snug">
             {scheme.name}
           </h3>
-          <p className="text-xs text-stone-500 mt-1">
-            {scheme.provider}
-          </p>
+          <p className="text-xs text-stone-500 mt-1">{scheme.provider}</p>
         </div>
 
         {/* Concise Reason for Matching */}
@@ -233,7 +240,9 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
                   >
                     <span className="font-medium text-stone-900">{doc.name}</span>
                     {doc.mandatory && (
-                      <span className="text-rose-600 text-[10px] ml-1 font-semibold">*Mandatory</span>
+                      <span className="text-rose-600 text-[10px] ml-1 font-semibold">
+                        *Mandatory
+                      </span>
                     )}
                     {doc.description && (
                       <p className="text-stone-500 text-[10px] mt-0.5">{doc.description}</p>
@@ -246,9 +255,7 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
             {/* Application Route */}
             {application.steps.length > 0 && (
               <div>
-                <span className="font-semibold text-stone-800 block mb-1">
-                  How to Apply
-                </span>
+                <span className="font-semibold text-stone-800 block mb-1">How to Apply</span>
                 <ol className="list-decimal list-inside space-y-1 text-stone-600 text-[11px] leading-relaxed">
                   {application.steps.map((step, sIdx) => (
                     <li key={sIdx}>{step}</li>
@@ -266,8 +273,12 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
               onClick={() => setExpanded(!expanded)}
               className="text-xs font-medium text-stone-600 hover:text-stone-900 inline-flex items-center gap-1 cursor-pointer"
             >
-              <span>{expanded ? 'Show Less' : 'Full Details & Documents'}</span>
-              {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              <span>{expanded ? "Show Less" : "Full Details & Documents"}</span>
+              {expanded ? (
+                <ChevronUp className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5" />
+              )}
             </button>
 
             <span className="text-stone-300">·</span>
@@ -293,9 +304,7 @@ export const SchemeCard: React.FC<SchemeCardProps> = ({
               <ExternalLink className="w-3 h-3 text-stone-300" />
             </a>
           ) : (
-            <span className="text-[11px] text-stone-400">
-              Apply via District / Block Office
-            </span>
+            <span className="text-[11px] text-stone-400">Apply via District / Block Office</span>
           )}
         </div>
       </div>

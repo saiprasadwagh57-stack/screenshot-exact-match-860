@@ -1,6 +1,6 @@
-import React from 'react';
-import { Database, Sparkles, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
-import { SchemeRecord } from '../types/scheme';
+import React from "react";
+import { Database, Sparkles, BookOpen, Layers, CheckCircle2 } from "lucide-react";
+import { SchemeRecord } from "../types/scheme";
 
 interface HeaderProps {
   schemes: SchemeRecord[];
@@ -19,10 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-30 bg-stone-50/85 backdrop-blur-md border-b border-stone-200/80 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
-        <div
-          onClick={onReset}
-          className="flex items-center gap-3 cursor-pointer group select-none"
-        >
+        <div onClick={onReset} className="flex items-center gap-3 cursor-pointer group select-none">
           <div className="w-9 h-9 rounded-xl bg-stone-900 text-amber-400 flex items-center justify-center font-bold text-lg shadow-sm group-hover:scale-105 transition-transform">
             <span>S</span>
           </div>

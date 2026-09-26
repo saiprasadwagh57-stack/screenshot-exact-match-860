@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { UserProfile, ProfileFact } from '../types/scheme';
-import { Edit3, Check, X, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import React, { useState } from "react";
+import { UserProfile, ProfileFact } from "../types/scheme";
+import { Edit3, Check, X, Plus, ShieldCheck, Trash2 } from "lucide-react";
 
 interface ProfileReviewProps {
   profile: UserProfile;
@@ -14,20 +14,18 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
   onClose,
 }) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState<string>('');
+  const [editValue, setEditValue] = useState<string>("");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newField, setNewField] = useState('state');
-  const [newValue, setNewValue] = useState('');
+  const [newField, setNewField] = useState("state");
+  const [newValue, setNewValue] = useState("");
 
   const formatFieldName = (name: string) => {
-    return name
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   const handleStartEdit = (index: number) => {
     setEditingIndex(index);
-    setEditValue(String(profile.facts[index]?.value ?? ''));
+    setEditValue(String(profile.facts[index]?.value ?? ""));
   };
 
   const handleSaveEdit = (index: number) => {
@@ -35,7 +33,7 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
     let val: any = editValue;
     const existing = updatedFacts[index];
     if (!existing) return;
-    if (existing.field === 'age' || existing.field === 'annual_household_income') {
+    if (existing.field === "age" || existing.field === "annual_household_income") {
       const num = Number(editValue);
       if (!isNaN(num)) val = num;
     }
@@ -43,7 +41,7 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
       ...existing,
       value: val,
       confidence: 1.0,
-      source: 'User confirmed / edited manually',
+      source: "User confirmed / edited manually",
     };
 
     onUpdateProfile({
@@ -67,7 +65,7 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
     if (!newValue.trim()) return;
 
     let val: any = newValue.trim();
-    if (newField === 'age' || newField === 'annual_household_income') {
+    if (newField === "age" || newField === "annual_household_income") {
       const num = Number(val);
       if (!isNaN(num)) val = num;
     }
@@ -76,7 +74,7 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
       field: newField,
       value: val,
       confidence: 1.0,
-      source: 'Manually added by user',
+      source: "Manually added by user",
     };
 
     // Remove old fact with same field name if already exists
@@ -86,7 +84,7 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
       facts: [...filtered, newFact],
     });
 
-    setNewValue('');
+    setNewValue("");
     setShowAddForm(false);
   };
 
@@ -103,7 +101,8 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-0.5">
-            These facts were extracted from your statement to search schemes. You can edit, delete, or add accurate details.
+            These facts were extracted from your statement to search schemes. You can edit, delete,
+            or add accurate details.
           </p>
         </div>
 
@@ -121,19 +120,15 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
       <div className="mt-4 divide-y divide-stone-100">
         {profile.facts.length === 0 ? (
           <div className="py-6 text-center text-xs text-stone-400">
-            No specific facts detected yet. Add details like age, state, or income to refine matching.
+            No specific facts detected yet. Add details like age, state, or income to refine
+            matching.
           </div>
         ) : (
           profile.facts.map((fact, index) => (
-            <div
-              key={index}
-              className="py-2.5 flex items-center justify-between gap-3 text-xs"
-            >
+            <div key={index} className="py-2.5 flex items-center justify-between gap-3 text-xs">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-stone-800">
-                    {formatFieldName(fact.field)}
-                  </span>
+                  <span className="font-medium text-stone-800">{formatFieldName(fact.field)}</span>
                   <span className="text-stone-400 text-[10px]">
                     · {Math.round(fact.confidence * 100)}% confidence
                   </span>
@@ -164,8 +159,8 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
                 ) : (
                   <div className="flex items-center gap-2 mt-0.5 text-stone-600 truncate">
                     <span className="font-semibold text-stone-900">
-                      {fact.field === 'annual_household_income'
-                        ? `₹${Number(fact.value).toLocaleString('en-IN')}`
+                      {fact.field === "annual_household_income"
+                        ? `₹${Number(fact.value).toLocaleString("en-IN")}`
                         : String(fact.value)}
                     </span>
                     <span className="text-[11px] text-stone-400 truncate">
@@ -210,7 +205,10 @@ export const ProfileReview: React.FC<ProfileReviewProps> = ({
             <span>Add missing detail (e.g. State, Income, Age, Category)</span>
           </button>
         ) : (
-          <form onSubmit={handleAddFact} className="w-full flex flex-wrap items-center gap-2 text-xs">
+          <form
+            onSubmit={handleAddFact}
+            className="w-full flex flex-wrap items-center gap-2 text-xs"
+          >
             <select
               value={newField}
               onChange={(e) => setNewField(e.target.value)}

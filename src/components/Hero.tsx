@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowRight, Sparkles, Compass } from 'lucide-react';
+import React from "react";
+import { ArrowRight, Sparkles, Compass } from "lucide-react";
 
 interface HeroProps {
   categories: string[];
@@ -30,7 +30,8 @@ export const Hero: React.FC<HeroProps> = ({
 
       {/* Subheadline */}
       <p className="text-base sm:text-lg text-stone-600 max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
-        Tell SchemeSaar what you need. We’ll search the available scheme database and explain the relevant options.
+        Tell SchemeSaar what you need. We’ll search the available scheme database and explain the
+        relevant options.
       </p>
 
       {/* Action Buttons */}
@@ -60,11 +61,11 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
           <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-3xl mx-auto">
             <button
-              onClick={() => onSelectCategory('ALL')}
+              onClick={() => onSelectCategory("ALL")}
               className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-                selectedCategory === 'ALL'
-                  ? 'bg-stone-900 text-stone-50 shadow-xs'
-                  : 'bg-stone-100/90 hover:bg-stone-200/80 text-stone-600'
+                selectedCategory === "ALL"
+                  ? "bg-stone-900 text-stone-50 shadow-xs"
+                  : "bg-stone-100/90 hover:bg-stone-200/80 text-stone-600"
               }`}
             >
               All Categories
@@ -75,8 +76,8 @@ export const Hero: React.FC<HeroProps> = ({
                 onClick={() => onSelectCategory(cat)}
                 className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
                   selectedCategory === cat
-                    ? 'bg-stone-900 text-stone-50 shadow-xs'
-                    : 'bg-stone-100/90 hover:bg-stone-200/80 text-stone-600'
+                    ? "bg-stone-900 text-stone-50 shadow-xs"
+                    : "bg-stone-100/90 hover:bg-stone-200/80 text-stone-600"
                 }`}
               >
                 {cat}
