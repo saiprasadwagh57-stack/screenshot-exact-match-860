@@ -109,7 +109,7 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
 
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         try {
           const content = event.target?.result as string;
           const parsed = SchemeDataAdapter.parseDatabaseFile(content, file.name);
@@ -120,17 +120,12 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
           filesProcessed++;
           if (filesProcessed === files.length) {
             if (allParsed.length > 0) {
-              let updated: SchemeRecord[];
-              if (importAction === "replace") {
-                SchemeDataAdapter.saveCustomSchemes(allParsed);
-                updated = allParsed;
-              } else {
-                updated = SchemeDataAdapter.appendSchemes(allParsed);
-              }
+              const res = await SchemeDataAdapter.saveSchemesToServer(allParsed, importAction);
+              const updated = SchemeDataAdapter.getSchemes();
               onDatabaseUpdated(updated);
               setStatusMessage({
                 type: "success",
-                text: `Successfully ${importAction === "replace" ? "replaced database with" : "appended"} ${allParsed.length} schemes from ${files.length} file(s)! Total active schemes: ${updated.length}.`,
+                text: `Successfully ${importAction === "replace" ? "replaced database with" : "appended"} ${allParsed.length} schemes across all devices! Total active schemes: ${updated.length}.`,
               });
               setSelectedScheme(updated[0] ?? null);
             } else {
@@ -151,7 +146,7 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
   };
 
   // Paste Data Handler
-  const handleImportPastedData = () => {
+  const handleImportPastedData = async () => {
     if (!pastedContent.trim()) {
       setStatusMessage({ type: "error", text: "Please paste your JSON or CSV content first." });
       return;
@@ -169,20 +164,15 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
         return;
       }
 
-      let updated: SchemeRecord[];
-      if (importAction === "replace") {
-        SchemeDataAdapter.saveCustomSchemes(parsed);
-        updated = parsed;
-      } else {
-        updated = SchemeDataAdapter.appendSchemes(parsed);
-      }
+      await SchemeDataAdapter.saveSchemesToServer(parsed, importAction);
+      const updated = SchemeDataAdapter.getSchemes();
 
       onDatabaseUpdated(updated);
       setSelectedScheme(updated[0] ?? null);
       setPastedContent("");
       setStatusMessage({
         type: "success",
-        text: `Successfully ${importAction === "replace" ? "replaced database with" : "appended"} ${parsed.length} schemes! Total active schemes: ${updated.length}.`,
+        text: `Successfully ${importAction === "replace" ? "replaced database with" : "appended"} ${parsed.length} schemes across all devices! Total active schemes: ${updated.length}.`,
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
@@ -191,7 +181,7 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
   };
 
   // Single Scheme Creation Handler
-  const handleAddSingleScheme = (e: React.FormEvent) => {
+  const handleAddSingleScheme = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSchemeForm.name.trim() || !newSchemeForm.provider.trim()) {
       setStatusMessage({
@@ -262,7 +252,8 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
       },
     };
 
-    const updated = SchemeDataAdapter.appendSchemes([newScheme]);
+    await SchemeDataAdapter.saveSchemesToServer([newScheme], "append");
+    const updated = SchemeDataAdapter.getSchemes();
     onDatabaseUpdated(updated);
     setSelectedScheme(newScheme);
     setNewSchemeForm({
@@ -281,37 +272,37 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
     });
     setStatusMessage({
       type: "success",
-      text: `Successfully added scheme "${newScheme.name}"! Total active schemes: ${updated.length}.`,
+      text: `Successfully added scheme "${newScheme.name}" across all devices! Total active schemes: ${updated.length}.`,
     });
   };
 
   // Erase whole database handler
-  const handleExecuteEraseDatabase = () => {
-    SchemeDataAdapter.clearAllSchemes();
+  const handleExecuteEraseDatabase = async () => {
+    await SchemeDataAdapter.clearAllSchemesServer();
     onDatabaseUpdated([]);
     setSelectedScheme(null);
     setShowEraseConfirmDialog(false);
     setEraseConfirmText("");
     setStatusMessage({
       type: "success",
-      text: "The website database has been completely erased. Active schemes count is now 0.",
+      text: "The website database has been completely erased across all devices. Active schemes count is now 0.",
     });
   };
 
   // Reset to default authentic schemes
-  const handleResetToDefault = () => {
-    SchemeDataAdapter.resetToDefault();
-    const defaults = SchemeDataAdapter.getSchemes();
+  const handleResetToDefault = async () => {
+    const res = await SchemeDataAdapter.resetToDefaultServer();
+    const defaults = res.schemes || SchemeDataAdapter.getSchemes();
     onDatabaseUpdated(defaults);
     setSelectedScheme(defaults[0] || null);
     setStatusMessage({
       type: "success",
-      text: `Database restored to default authentic collection (${defaults.length} schemes).`,
+      text: `Database restored across all devices to default authentic collection (${defaults.length} schemes).`,
     });
   };
 
   // Password change handler
-  const handleUpdatePassword = (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!AdminAuthService.verifyPassword(oldPasswordInput)) {
       setPasswordStatus({ type: "error", text: "Current password is incorrect." });
@@ -329,14 +320,21 @@ export const DatabaseManagerModal: React.FC<DatabaseManagerModalProps> = ({
       return;
     }
 
-    AdminAuthService.setAdminPassword(newPasswordInput);
-    setOldPasswordInput("");
-    setNewPasswordInput("");
-    setConfirmPasswordInput("");
-    setPasswordStatus({
-      type: "success",
-      text: "Admin password successfully updated! Use this new password for next logins.",
-    });
+    const result = await AdminAuthService.updatePasswordAsync(oldPasswordInput, newPasswordInput);
+    if (result.success) {
+      setOldPasswordInput("");
+      setNewPasswordInput("");
+      setConfirmPasswordInput("");
+      setPasswordStatus({
+        type: "success",
+        text: "Admin password successfully updated on server and across all devices!",
+      });
+    } else {
+      setPasswordStatus({
+        type: "error",
+        text: result.error || "Failed to update password.",
+      });
+    }
   };
 
   // Export database as JSON

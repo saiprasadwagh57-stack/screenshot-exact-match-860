@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ai } from "../../lib/gemini";
 
 // Rule-based fallback extractor (ported from the original Express server)
 function extractProfileRuleBased(text: string) {
@@ -284,7 +285,7 @@ export const Route = createFileRoute("/api/extract-profile")({
           return Response.json({ error: "Missing or invalid input text" }, { status: 400 });
         }
 
-        const apiKey = process.env["LOVABLE_API_KEY"];
+        const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
           return Response.json({
             profile: extractProfileRuleBased(text),
@@ -293,34 +294,64 @@ export const Route = createFileRoute("/api/extract-profile")({
         }
 
         try {
-          const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "You are the lead AI information extraction engine for SchemeSaar, an official scheme discovery platform in India. Analyze the user's natural language requirement. Extract only explicitly stated facts or safe, conservative inferences (e.g., student, age, farmer, housing situation, state, income). Do NOT invent any facts or assumptions not directly substantiated by the query.",
+          const response = await ai.models.generateContent({
+            model: "gemini-3.8-flash",
+            contents: `User Query: "${text}"`,
+            config: {
+              systemInstruction:
+                "You are the lead AI information extraction engine for SchemeSaar, an official scheme discovery platform in India. Analyze the user's natural language requirement. Extract only explicitly stated facts or safe, conservative inferences (e.g., student, age, farmer, housing situation, state, income). Do NOT invent any facts or assumptions not directly substantiated by the query.",
+              responseMimeType: "application/json",
+              responseSchema: {
+                type: "object",
+                properties: {
+                  stated_need: {
+                    type: "string",
+                    description: "A clean summary of what the user is requesting assistance for",
+                  },
+                  facts: {
+                    type: "array",
+                    description: "List of extracted facts with confidence and exact textual source",
+                    items: {
+                      type: "object",
+                      properties: {
+                        field: {
+                          type: "string",
+                          description:
+                            "Field name: age, state, district, gender, occupation, education_level, education_status, annual_household_income, social_category, disability_status, housing_status",
+                        },
+                        value: {
+                          type: "string",
+                          description:
+                            'Extracted value as a string (numbers as numeric strings e.g. "250000" or "21")',
+                        },
+                        confidence: {
+                          type: "number",
+                          description: "Confidence score from 0.0 to 1.0",
+                        },
+                        source: {
+                          type: "string",
+                          description:
+                            "Verbatim substring from the user input confirming this fact",
+                        },
+                      },
+                      required: ["field", "value", "confidence", "source"],
+                    },
+                  },
+                  inferred_categories: { type: "array", items: { type: "string" } },
+                  missing_high_value_fields: { type: "array", items: { type: "string" } },
                 },
-                { role: "user", content: `User Query: "${text}"` },
-              ],
-              response_format: {
-                type: "json_schema",
-                json_schema: { name: "profile_extraction", schema: PROFILE_SCHEMA, strict: true },
-              },
-            }),
+                required: [
+                  "stated_need",
+                  "facts",
+                  "inferred_categories",
+                  "missing_high_value_fields",
+                ],
+              } as any,
+            },
           });
 
-          if (!aiRes.ok) throw new Error(`AI gateway error: ${aiRes.status}`);
-
-          const aiData = await aiRes.json();
-          const content = aiData?.choices?.[0]?.message?.content;
-          const parsed = JSON.parse(typeof content === "string" ? content : "{}");
+          const content = response.text || "{}";
+          const parsed = JSON.parse(content);
 
           if (!parsed.facts || !Array.isArray(parsed.facts)) {
             return Response.json({
@@ -337,7 +368,7 @@ export const Route = createFileRoute("/api/extract-profile")({
             return f;
           });
 
-          return Response.json({ profile: parsed, source: "gemini-2.5-flash" });
+          return Response.json({ profile: parsed, source: "gemini-3.8-flash" });
         } catch (error: any) {
           console.warn("AI extraction error, falling back to heuristic engine:", error?.message);
           return Response.json({

@@ -17,23 +17,30 @@ export const AdminPasswordModal: React.FC<AdminPasswordModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [isVerifying, setIsVerifying] = useState(false);
+
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) {
       setError("Please enter the admin password.");
       return;
     }
 
-    const isValid = AdminAuthService.verifyPassword(password);
-    if (isValid) {
-      AdminAuthService.setSessionAuthenticated(true);
-      setError(null);
-      setPassword("");
-      onAuthenticated();
-    } else {
-      setError("Incorrect password. Please verify and try again.");
+    setIsVerifying(true);
+    try {
+      const isValid = await AdminAuthService.verifyPasswordAsync(password);
+      if (isValid) {
+        AdminAuthService.setSessionAuthenticated(true);
+        setError(null);
+        setPassword("");
+        onAuthenticated();
+      } else {
+        setError("Incorrect password. Please verify and try again.");
+      }
+    } finally {
+      setIsVerifying(false);
     }
   };
 

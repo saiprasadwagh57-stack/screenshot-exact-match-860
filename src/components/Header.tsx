@@ -1,12 +1,11 @@
 import React from "react";
-import { Database, BookOpen, Lock, ShieldCheck } from "lucide-react";
+import { Database, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { SchemeRecord } from "../types/scheme";
 
 interface HeaderProps {
   schemes: SchemeRecord[];
   isAdminAuthenticated: boolean;
   onOpenDatabaseManager: () => void;
-  onOpenScenarios: () => void;
   onReset: () => void;
 }
 
@@ -14,7 +13,6 @@ export const Header: React.FC<HeaderProps> = ({
   schemes,
   isAdminAuthenticated,
   onOpenDatabaseManager,
-  onOpenScenarios,
   onReset,
 }) => {
   return (
@@ -30,23 +28,18 @@ export const Header: React.FC<HeaderProps> = ({
               SchemeSaar
             </span>
             <span className="text-[11px] text-stone-500 font-normal">
-              Universal Scheme Guidance
+              Universal Scheme Guidance &amp; Intelligence
             </span>
           </div>
         </div>
 
         {/* Center / Navigation Actions */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          {/* Test Scenarios */}
-          <button
-            onClick={onOpenScenarios}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-700 hover:text-stone-950 hover:bg-stone-200/60 rounded-lg transition-colors cursor-pointer"
-            title="Load 10 realistic test scenarios across education, agriculture, housing, business, etc."
-          >
-            <BookOpen className="w-3.5 h-3.5 text-amber-700" />
-            <span className="hidden sm:inline">10 Test Scenarios</span>
-            <span className="sm:hidden">Demo</span>
-          </button>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* AI Intelligence Badge */}
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-amber-900 bg-amber-50 border border-amber-200/70 rounded-lg">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <span>AI Powered</span>
+          </div>
 
           {/* Database Inspector & Uploader (Admin Protected) */}
           <button

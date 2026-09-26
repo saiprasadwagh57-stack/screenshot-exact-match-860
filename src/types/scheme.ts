@@ -178,3 +178,17 @@ export interface SearchFilters {
   benefit_type?: string;
   search_query?: string;
 }
+
+export interface AiConciseSchemeInfo {
+  schemeId: string;
+  conciseSummary: string;
+  conciseBenefit: string;
+  whyRequired: string;
+  keyEligibility: string;
+}
+
+export interface AiSchemeAnalysisResult {
+  topSchemeId: string | null;
+  popReason?: string;
+  conciseSchemes: Record<string, AiConciseSchemeInfo>;
+}

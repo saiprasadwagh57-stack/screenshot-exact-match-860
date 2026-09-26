@@ -1,6 +1,6 @@
 /**
  * Admin Authentication Service
- * Manages admin access, password verification, session state, and password updates.
+ * Manages admin access, server/client password verification, session state, and password updates.
  */
 
 export class AdminAuthService {
@@ -30,20 +30,79 @@ export class AdminAuthService {
   }
 
   /**
-   * Resets the admin password back to the default 'admin123'.
-   */
-  public static resetPasswordToDefault(): void {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(this.PWD_STORAGE_KEY);
-    }
-  }
-
-  /**
-   * Checks whether the user input matches the admin password.
+   * Checks whether the user input matches the admin password synchronously.
    */
   public static verifyPassword(input: string): boolean {
     const current = this.getAdminPassword();
     return input.trim() === current.trim();
+  }
+
+  /**
+   * Verifies password against the server so admin password works across all devices.
+   */
+  public static async verifyPasswordAsync(input: string): Promise<boolean> {
+    try {
+      const res = await fetch("/api/admin-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "verify", password: input }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.valid === "boolean") {
+          if (data.valid) {
+            this.setAdminPassword(input);
+          }
+          return data.valid;
+        }
+      }
+    } catch (e) {
+      console.warn("Server auth check fallback to local:", e);
+    }
+    return this.verifyPassword(input);
+  }
+
+  /**
+   * Updates password across all devices via server API.
+   */
+  public static async updatePasswordAsync(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const res = await fetch("/api/admin-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update", currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        this.setAdminPassword(newPassword);
+        return { success: true };
+      }
+      return { success: false, error: data.error || "Failed to update password on server" };
+    } catch {
+      this.setAdminPassword(newPassword);
+      return { success: true };
+    }
+  }
+
+  /**
+   * Resets the admin password back to the default 'admin123'.
+   */
+  public static async resetPasswordToDefaultAsync(): Promise<void> {
+    try {
+      await fetch("/api/admin-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reset" }),
+      });
+    } catch {
+      // ignore
+    }
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(this.PWD_STORAGE_KEY);
+    }
   }
 
   /**

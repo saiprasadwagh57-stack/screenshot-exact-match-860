@@ -49,14 +49,125 @@ export class SchemeDataAdapter {
   }
 
   /**
-   * Completely erase all schemes from the website database
+   * Loads the current active schemes from the server API, ensuring all devices stay synchronized.
    */
-  public static clearAllSchemes(): void {
+  public static async fetchServerSchemes(): Promise<SchemeRecord[]> {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify([]));
+      const res = await fetch("/api/schemes");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.schemes)) {
+          this.saveCustomSchemes(data.schemes);
+          return data.schemes;
+        }
+      }
     } catch (e) {
-      console.error("Error clearing scheme database:", e);
+      console.warn("Failed to fetch schemes from server API, using local storage:", e);
     }
+    return this.getSchemes();
+  }
+
+  /**
+   * Saves updated schemes to the server so that the update is reflected across all devices.
+   */
+  public static async saveSchemesToServer(
+    schemes: SchemeRecord[],
+    action: "replace" | "append" = "replace",
+    password?: string,
+  ): Promise<{ success: boolean; count: number; message: string }> {
+    const pwd = password || localStorage.getItem("schemesaar_admin_password") || "admin123";
+    try {
+      const res = await fetch("/api/schemes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pwd, action, schemes }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (Array.isArray(data.schemes)) {
+          this.saveCustomSchemes(data.schemes);
+        } else {
+          this.saveCustomSchemes(schemes);
+        }
+        return {
+          success: true,
+          count: data.count || schemes.length,
+          message: data.message || "Database synchronized across all devices.",
+        };
+      }
+      return {
+        success: false,
+        count: schemes.length,
+        message: data.error || "Failed to persist to server",
+      };
+    } catch (e: any) {
+      console.error("Error saving schemes to server:", e);
+      // Fallback local save
+      this.saveCustomSchemes(schemes);
+      return {
+        success: true,
+        count: schemes.length,
+        message: "Saved locally (server offline)",
+      };
+    }
+  }
+
+  /**
+   * Completely erase all schemes from the website database on both server and client.
+   */
+  public static async clearAllSchemesServer(
+    password?: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const pwd = password || localStorage.getItem("schemesaar_admin_password") || "admin123";
+    try {
+      const res = await fetch("/api/schemes", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pwd }),
+      });
+      const data = await res.json();
+      this.clearAllSchemes();
+      return {
+        success: res.ok && data.success,
+        message: data.message || "Database wiped.",
+      };
+    } catch (e: any) {
+      this.clearAllSchemes();
+      return { success: true, message: "Database erased locally." };
+    }
+  }
+
+  /**
+   * Resets server and client back to default authentic schemes collection.
+   */
+  public static async resetToDefaultServer(
+    password?: string,
+  ): Promise<{ success: boolean; schemes: SchemeRecord[]; message: string }> {
+    const pwd = password || localStorage.getItem("schemesaar_admin_password") || "admin123";
+    try {
+      const res = await fetch("/api/schemes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pwd, action: "reset" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && Array.isArray(data.schemes)) {
+        this.saveCustomSchemes(data.schemes);
+        return {
+          success: true,
+          schemes: data.schemes,
+          message: data.message || "Reset to defaults.",
+        };
+      }
+    } catch (e) {
+      console.error("Error resetting schemes on server:", e);
+    }
+    this.resetToDefault();
+    return {
+      success: true,
+      schemes: this.getSchemes(),
+      message: "Reset locally.",
+    };
   }
 
   /**

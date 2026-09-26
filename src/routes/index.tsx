@@ -28,6 +28,7 @@ import {
   CandidateScheme,
   SearchFilters,
   OverallMatchState,
+  AiSchemeAnalysisResult,
 } from "@/types/scheme";
 import { SchemeDataAdapter } from "@/services/schemeDataAdapter";
 import { DEFAULT_SCHEMES_DATABASE } from "@/data/defaultSchemes";
@@ -38,13 +39,13 @@ import { NaturalLanguageInput } from "@/components/NaturalLanguageInput";
 import { ProfileReview } from "@/components/ProfileReview";
 import { AdaptiveInterview } from "@/components/AdaptiveInterview";
 import { SchemeCard } from "@/components/SchemeCard";
+import { AiPoppedUpSchemeBanner } from "@/components/AiPoppedUpSchemeBanner";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { SchemeComparisonModal } from "@/components/SchemeComparisonModal";
 import { DatabaseManagerModal } from "@/components/DatabaseManagerModal";
 import { AdminPasswordModal } from "@/components/AdminPasswordModal";
-import { ScenarioPickerModal } from "@/components/ScenarioPickerModal";
+import { AiSchemeGuidanceModal } from "@/components/AiSchemeGuidanceModal";
 import { AdminAuthService } from "@/services/adminAuthService";
-import { TestScenario } from "@/data/syntheticScenarios";
 import fullDbAsset from "@/assets/schemes.json.asset.json";
 import {
   Filter,
@@ -67,25 +68,41 @@ function App() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [isAdminPasswordModalOpen, setIsAdminPasswordModalOpen] = useState(false);
 
-  // Sync client storage and load full scheme database after initial hydration
+  // AI Guidance Modal State
+  const [selectedAiScheme, setSelectedAiScheme] = useState<SchemeRecord | null>(null);
+  const [isAiGuidanceModalOpen, setIsAiGuidanceModalOpen] = useState(false);
+
+  // AI Scheme Discovery & Concise Analysis state
+  const [aiAnalysis, setAiAnalysis] = useState<AiSchemeAnalysisResult | null>(null);
+  const [dismissedTopSchemeId, setDismissedTopSchemeId] = useState<string | null>(null);
+
+  // Sync client storage and load server-persisted scheme database so all devices stay identical
   useEffect(() => {
     // Sync admin auth status from browser session
     setIsAdminAuthenticated(AdminAuthService.isAuthenticated());
 
-    // If a custom or erased database exists in localStorage, load it directly
-    if (localStorage.getItem("schemesaar_custom_database") !== null) {
-      setDatabase(SchemeDataAdapter.getSchemes());
-      return;
-    }
-
     let cancelled = false;
 
-    const loadFullDatabase = async () => {
+    const loadServerDatabase = async () => {
+      try {
+        const res = await fetch("/api/schemes");
+        if (res.ok) {
+          const data = await res.json();
+          if (cancelled) return;
+          if (Array.isArray(data.schemes)) {
+            setDatabase(data.schemes);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not fetch /api/schemes, trying fallback static assets:", e);
+      }
+
+      // Fallback to static asset if API endpoint had an issue
       try {
         let response = await fetch(fullDbAsset.url);
         const contentType = response.headers.get("content-type") || "";
         if (!response.ok || !contentType.includes("json")) {
-          // Fallback to remote URL if local server does not serve json
           response = await fetch(
             `https://id-preview--${fullDbAsset.project_id}.lovable.app${fullDbAsset.url}`,
           );
@@ -93,17 +110,13 @@ function App() {
         if (!response.ok) return;
         const full = (await response.json()) as SchemeRecord[];
         if (cancelled || !Array.isArray(full)) return;
-        const names = new Set(full.map((s) => s.name.toLowerCase()));
-        const extras = SchemeDataAdapter.getSchemes().filter(
-          (s) => !names.has(s.name.toLowerCase()),
-        );
-        setDatabase([...extras, ...full]);
+        setDatabase(full);
       } catch (e) {
-        console.warn("Failed to load full scheme database, using default schemes:", e);
+        console.warn("Failed to load fallback scheme database:", e);
       }
     };
 
-    loadFullDatabase();
+    loadServerDatabase();
     return () => {
       cancelled = true;
     };
@@ -129,7 +142,6 @@ function App() {
   const [comparedSchemeIds, setComparedSchemeIds] = useState<string[]>([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isDatabaseModalOpen, setIsDatabaseModalOpen] = useState(false);
-  const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -207,6 +219,65 @@ function App() {
     return SearchService.searchSchemes(effectiveProfile, filters, database);
   }, [effectiveProfile, filters, database]);
 
+  // Trigger AI scheme analysis whenever user requirement changes and candidate schemes are available
+  useEffect(() => {
+    if (!userProfile || !inputText.trim() || candidateSchemes.length === 0) {
+      setAiAnalysis(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const topPool = candidateSchemes.slice(0, 10).map((c) => ({
+      id: c.scheme.id,
+      name: c.scheme.name,
+      provider: c.scheme.provider,
+      government_level: c.scheme.government_level,
+      categories: c.scheme.categories,
+      benefits: c.scheme.benefits,
+      description: c.scheme.description,
+      states: c.scheme.states,
+    }));
+
+    fetch("/api/ai-analyze-schemes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userQuery: inputText,
+        userProfile,
+        schemes: topPool,
+      }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: AiSchemeAnalysisResult) => {
+        if (!cancelled && data) {
+          setAiAnalysis(data);
+        }
+      })
+      .catch((err) => {
+        console.warn("Async AI scheme analysis notice:", err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userProfile, inputText, candidateSchemes]);
+
+  // Determine top popped-up scheme required for user
+  const poppedUpScheme = useMemo(() => {
+    if (!userProfile && !inputText.trim()) return null;
+    if (candidateSchemes.length === 0) return null;
+
+    if (aiAnalysis?.topSchemeId) {
+      const match = database.find((s) => s.id === aiAnalysis.topSchemeId);
+      if (match && match.id !== dismissedTopSchemeId) return match;
+    }
+
+    const top = candidateSchemes[0]?.scheme;
+    if (top && top.id !== dismissedTopSchemeId) return top;
+    return null;
+  }, [userProfile, inputText, candidateSchemes, aiAnalysis, database, dismissedTopSchemeId]);
+
   // Adaptive Questions based on candidate schemes
   const adaptiveQuestions = useMemo(() => {
     if (!userProfile) return [];
@@ -267,12 +338,6 @@ function App() {
     return candidateSchemes.filter((c) => comparedSchemeIds.includes(c.scheme.id));
   }, [candidateSchemes, comparedSchemeIds]);
 
-  // Load a test scenario
-  const handleSelectScenario = (scenario: TestScenario) => {
-    setInputText(scenario.query);
-    handleAnalyzeNeed(scenario.query);
-  };
-
   // Reset to initial clean state
   const handleReset = () => {
     setUserProfile(null);
@@ -286,6 +351,8 @@ function App() {
     });
     setComparedSchemeIds([]);
     setShowProfileReview(false);
+    setAiAnalysis(null);
+    setDismissedTopSchemeId(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -318,7 +385,6 @@ function App() {
         schemes={database}
         isAdminAuthenticated={isAdminAuthenticated}
         onOpenDatabaseManager={handleOpenDatabaseManager}
-        onOpenScenarios={() => setIsScenarioModalOpen(true)}
         onReset={handleReset}
       />
 
@@ -517,21 +583,43 @@ function App() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {candidateSchemes.map((candidate) => (
-                <SchemeCard
-                  key={candidate.scheme.id}
-                  candidate={candidate}
-                  onOpenEvidence={(c) => setActiveEvidenceScheme(c)}
-                  onRefineResult={(c) => {
-                    // Open profile review to clarify unknown criteria
-                    setShowProfileReview(true);
-                    window.scrollTo({ top: 400, behavior: "smooth" });
+            <div className="space-y-6">
+              {/* AI Popped-Up Scheme (Prominently displayed with Concise Info First) */}
+              {poppedUpScheme && (
+                <AiPoppedUpSchemeBanner
+                  scheme={poppedUpScheme}
+                  popReason={aiAnalysis?.popReason}
+                  conciseInfo={aiAnalysis?.conciseSchemes?.[poppedUpScheme.id]}
+                  onViewDetailed={(scheme) => {
+                    setSelectedAiScheme(scheme);
+                    setIsAiGuidanceModalOpen(true);
                   }}
-                  isSelectedForCompare={comparedSchemeIds.includes(candidate.scheme.id)}
-                  onToggleCompare={handleToggleCompare}
+                  onDismiss={() => setDismissedTopSchemeId(poppedUpScheme.id)}
                 />
-              ))}
+              )}
+
+              {/* All Candidate Schemes Grid with Concise Info First */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {candidateSchemes.map((candidate) => (
+                  <SchemeCard
+                    key={candidate.scheme.id}
+                    candidate={candidate}
+                    conciseInfo={aiAnalysis?.conciseSchemes?.[candidate.scheme.id]}
+                    onOpenEvidence={(c) => setActiveEvidenceScheme(c)}
+                    onOpenAiGuidance={(scheme) => {
+                      setSelectedAiScheme(scheme);
+                      setIsAiGuidanceModalOpen(true);
+                    }}
+                    onRefineResult={(c) => {
+                      // Open profile review to clarify unknown criteria
+                      setShowProfileReview(true);
+                      window.scrollTo({ top: 400, behavior: "smooth" });
+                    }}
+                    isSelectedForCompare={comparedSchemeIds.includes(candidate.scheme.id)}
+                    onToggleCompare={handleToggleCompare}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -625,11 +713,17 @@ function App() {
         />
       )}
 
-      {/* 10 Test Scenarios QA Modal */}
-      {isScenarioModalOpen && (
-        <ScenarioPickerModal
-          onSelectScenario={handleSelectScenario}
-          onClose={() => setIsScenarioModalOpen(false)}
+      {/* AI Scheme Conscious Guidance & Chat Modal */}
+      {isAiGuidanceModalOpen && (
+        <AiSchemeGuidanceModal
+          scheme={selectedAiScheme}
+          userProfile={userProfile}
+          userQuery={inputText}
+          isOpen={isAiGuidanceModalOpen}
+          onClose={() => {
+            setIsAiGuidanceModalOpen(false);
+            setSelectedAiScheme(null);
+          }}
         />
       )}
     </div>
