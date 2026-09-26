@@ -63,17 +63,31 @@ function App() {
   useEffect(() => {
     if (localStorage.getItem("schemesaar_custom_database")) return;
     let cancelled = false;
-    fetch(fullDbAsset.url)
-      .then((r) => r.json())
-      .then((full: SchemeRecord[]) => {
+
+    const loadFullDatabase = async () => {
+      try {
+        let response = await fetch(fullDbAsset.url);
+        const contentType = response.headers.get("content-type") || "";
+        if (!response.ok || !contentType.includes("json")) {
+          // Fallback to remote URL if local server does not serve json
+          response = await fetch(
+            `https://id-preview--${fullDbAsset.project_id}.lovable.app${fullDbAsset.url}`,
+          );
+        }
+        if (!response.ok) return;
+        const full = (await response.json()) as SchemeRecord[];
         if (cancelled || !Array.isArray(full)) return;
         const names = new Set(full.map((s) => s.name.toLowerCase()));
         const extras = SchemeDataAdapter.getSchemes().filter(
           (s) => !names.has(s.name.toLowerCase()),
         );
         setDatabase([...extras, ...full]);
-      })
-      .catch((e) => console.error("Failed to load full scheme database", e));
+      } catch (e) {
+        console.warn("Failed to load full scheme database, using default schemes:", e);
+      }
+    };
+
+    loadFullDatabase();
     return () => {
       cancelled = true;
     };
