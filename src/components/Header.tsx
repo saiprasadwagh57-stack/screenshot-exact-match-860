@@ -1,9 +1,10 @@
 import React from "react";
-import { Database, Sparkles, BookOpen, Layers, CheckCircle2 } from "lucide-react";
+import { Database, BookOpen, Lock, ShieldCheck } from "lucide-react";
 import { SchemeRecord } from "../types/scheme";
 
 interface HeaderProps {
   schemes: SchemeRecord[];
+  isAdminAuthenticated: boolean;
   onOpenDatabaseManager: () => void;
   onOpenScenarios: () => void;
   onReset: () => void;
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   schemes,
+  isAdminAuthenticated,
   onOpenDatabaseManager,
   onOpenScenarios,
   onReset,
@@ -46,15 +48,33 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="sm:hidden">Demo</span>
           </button>
 
-          {/* Database Inspector & Uploader */}
+          {/* Database Inspector & Uploader (Admin Protected) */}
           <button
             onClick={onOpenDatabaseManager}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-700 hover:text-stone-950 bg-stone-100/90 hover:bg-stone-200/80 rounded-lg border border-stone-200/80 transition-colors cursor-pointer"
-            title="Inspect active database, schema mapping, or upload custom JSON/CSV/SQL files"
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all cursor-pointer ${
+              isAdminAuthenticated
+                ? "text-stone-900 bg-emerald-50/80 border-emerald-300 hover:bg-emerald-100/80"
+                : "text-stone-700 hover:text-stone-950 bg-stone-100/90 hover:bg-stone-200/80 border-stone-200/80"
+            }`}
+            title={
+              isAdminAuthenticated
+                ? "Admin authenticated: Click to manage, erase, or add schemes"
+                : "Admin access only: Click to unlock database with admin password"
+            }
           >
+            {isAdminAuthenticated ? (
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            ) : (
+              <Lock className="w-3.5 h-3.5 text-stone-500" />
+            )}
             <Database className="w-3.5 h-3.5 text-stone-700" />
             <span>Database</span>
             <span className="text-stone-400 text-[10px]">({schemes.length})</span>
+            {isAdminAuthenticated && (
+              <span className="hidden sm:inline text-[9px] bg-emerald-200/70 text-emerald-800 font-semibold px-1 rounded">
+                Admin
+              </span>
+            )}
           </button>
         </div>
       </div>

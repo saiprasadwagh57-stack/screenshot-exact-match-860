@@ -30,6 +30,7 @@ import {
   OverallMatchState,
 } from "@/types/scheme";
 import { SchemeDataAdapter } from "@/services/schemeDataAdapter";
+import { DEFAULT_SCHEMES_DATABASE } from "@/data/defaultSchemes";
 import { SearchService } from "@/services/searchService";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
@@ -40,7 +41,9 @@ import { SchemeCard } from "@/components/SchemeCard";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { SchemeComparisonModal } from "@/components/SchemeComparisonModal";
 import { DatabaseManagerModal } from "@/components/DatabaseManagerModal";
+import { AdminPasswordModal } from "@/components/AdminPasswordModal";
 import { ScenarioPickerModal } from "@/components/ScenarioPickerModal";
+import { AdminAuthService } from "@/services/adminAuthService";
 import { TestScenario } from "@/data/syntheticScenarios";
 import fullDbAsset from "@/assets/schemes.json.asset.json";
 import {
@@ -53,15 +56,28 @@ import {
   SlidersHorizontal,
   ArrowUpDown,
   Search,
+  Database,
 } from "lucide-react";
 
 function App() {
-  // Database state
-  const [database, setDatabase] = useState<SchemeRecord[]>(() => SchemeDataAdapter.getSchemes());
+  // Database state initialized to static defaults to match server-rendered markup
+  const [database, setDatabase] = useState<SchemeRecord[]>(() => DEFAULT_SCHEMES_DATABASE);
 
-  // Load the complete scheme database (2,066 schemes) unless a custom import exists
+  // Admin Authentication State (starts false for hydration parity, synced on mount)
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [isAdminPasswordModalOpen, setIsAdminPasswordModalOpen] = useState(false);
+
+  // Sync client storage and load full scheme database after initial hydration
   useEffect(() => {
-    if (localStorage.getItem("schemesaar_custom_database")) return;
+    // Sync admin auth status from browser session
+    setIsAdminAuthenticated(AdminAuthService.isAuthenticated());
+
+    // If a custom or erased database exists in localStorage, load it directly
+    if (localStorage.getItem("schemesaar_custom_database") !== null) {
+      setDatabase(SchemeDataAdapter.getSchemes());
+      return;
+    }
+
     let cancelled = false;
 
     const loadFullDatabase = async () => {
@@ -273,17 +289,66 @@ function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Admin Authentication handlers
+  const handleOpenDatabaseManager = () => {
+    if (AdminAuthService.isAuthenticated()) {
+      setIsAdminAuthenticated(true);
+      setIsDatabaseModalOpen(true);
+    } else {
+      setIsAdminPasswordModalOpen(true);
+    }
+  };
+
+  const handleAdminAuthenticated = () => {
+    setIsAdminAuthenticated(true);
+    setIsAdminPasswordModalOpen(false);
+    setIsDatabaseModalOpen(true);
+  };
+
+  const handleAdminLogout = () => {
+    AdminAuthService.logout();
+    setIsAdminAuthenticated(false);
+    setIsDatabaseModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-stone-50/50 text-stone-900 selection:bg-amber-100 selection:text-amber-900">
       {/* Universal Top Navigation Header */}
       <Header
         schemes={database}
-        onOpenDatabaseManager={() => setIsDatabaseModalOpen(true)}
+        isAdminAuthenticated={isAdminAuthenticated}
+        onOpenDatabaseManager={handleOpenDatabaseManager}
         onOpenScenarios={() => setIsScenarioModalOpen(true)}
         onReset={handleReset}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Erased Database Notice if 0 schemes */}
+        {database.length === 0 && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900 shadow-xs animate-in fade-in duration-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 text-amber-800 rounded-xl shrink-0">
+                <Database className="w-5 h-5" />
+              </div>
+              <div>
+                <strong className="block font-bold text-stone-900 text-sm">
+                  The website scheme database is currently empty (0 schemes).
+                </strong>
+                <span className="text-stone-600">
+                  The whole database was erased by the administrator. Authorized admins can upload
+                  or add new schemes, or restore defaults.
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={handleOpenDatabaseManager}
+              className="px-4 py-2 bg-stone-900 text-stone-50 font-semibold rounded-xl hover:bg-stone-800 transition-colors shrink-0 cursor-pointer shadow-xs"
+            >
+              Open Database Console
+            </button>
+          </div>
+        )}
+
         {/* Landing Hero Section */}
         <Hero
           categories={representedCategories}
@@ -543,12 +608,20 @@ function App() {
         />
       )}
 
-      {/* Database Management & Uploader Modal */}
+      {/* Admin Password Gate Modal */}
+      <AdminPasswordModal
+        isOpen={isAdminPasswordModalOpen}
+        onClose={() => setIsAdminPasswordModalOpen(false)}
+        onAuthenticated={handleAdminAuthenticated}
+      />
+
+      {/* Database Management & Uploader Modal (Admin Protected) */}
       {isDatabaseModalOpen && (
         <DatabaseManagerModal
           schemes={database}
           onDatabaseUpdated={(newSchemes) => setDatabase(newSchemes)}
           onClose={() => setIsDatabaseModalOpen(false)}
+          onLogout={handleAdminLogout}
         />
       )}
 

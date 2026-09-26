@@ -25,9 +25,9 @@ export class SchemeDataAdapter {
     try {
       if (typeof window === "undefined") return DEFAULT_SCHEMES_DATABASE;
       const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
+      if (stored !== null) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
@@ -46,6 +46,29 @@ export class SchemeDataAdapter {
     } catch (e) {
       console.error("Error saving custom schemes:", e);
     }
+  }
+
+  /**
+   * Completely erase all schemes from the website database
+   */
+  public static clearAllSchemes(): void {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify([]));
+    } catch (e) {
+      console.error("Error clearing scheme database:", e);
+    }
+  }
+
+  /**
+   * Appends new schemes to the existing database, avoiding duplicate IDs
+   */
+  public static appendSchemes(newSchemes: SchemeRecord[]): SchemeRecord[] {
+    const existing = this.getSchemes();
+    const existingIds = new Set(existing.map((s) => s.id.toLowerCase()));
+    const toAdd = newSchemes.filter((s) => !existingIds.has(s.id.toLowerCase()));
+    const combined = [...existing, ...toAdd];
+    this.saveCustomSchemes(combined);
+    return combined;
   }
 
   /**
